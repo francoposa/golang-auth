@@ -26,7 +26,7 @@ func main() {
 	// /locations - retrieve a list of We We locations a user can leave feedback on
 	router.Handle("/locations", http.HandlerFunc(ListLocationsHandler)).Methods("GET")
 	// /locations/{slug}/feedback - which will capture user feedback on locations
-	router.Handle("/locations/{slug}/feebdack", http.HandlerFunc(NotImplementedHandler)).Methods("POST")
+	router.Handle("/locations/{slug}/feedback", http.HandlerFunc(AddLocationFeedback)).Methods("POST")
 
 	srv := &http.Server{
 		Handler: router,

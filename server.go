@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 var contentTypeJSON = "application/json"
@@ -23,6 +25,32 @@ var locations = []Location{
 	Location{ID: "6", Name: "Real World VR", Slug: "real-world-vr", Description: "Explore the seven wonders of the world in VR"},
 }
 
+func ListLocationsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", contentTypeJSON)
+	respBody, _ := json.Marshal(locations)
+	w.Write(respBody)
+}
+
+func AddLocationFeedback(w http.ResponseWriter, r *http.Request) {
+	var location Location
+	vars := mux.Vars(r)
+	slug := vars["slug"]
+	for _, l := range locations {
+		if l.Slug == slug {
+			location = l
+		}
+	}
+
+	w.Header().Set("Content-Type", contentTypeJSON)
+	if location.Slug != "" {
+		respBody, _ := json.Marshal(location)
+		w.Write(respBody)
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Location Not Found"))
+	}
+}
+
 func HealthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", contentTypeJSON)
 	respData := map[string]string{"status": "ok"}
@@ -33,10 +61,4 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 func NotImplementedHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 	w.Write([]byte("Not Implemented"))
-}
-
-func ListLocationsHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", contentTypeJSON)
-	respBody, _ := json.Marshal(locations)
-	w.Write(respBody)
 }
