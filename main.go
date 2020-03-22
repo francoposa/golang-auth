@@ -4,8 +4,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/francojposa/golang-auth/server"
+
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -22,14 +26,14 @@ func main() {
 
 	// Setup API handling on router
 	// /health - health check
-	router.Handle("/health", http.HandlerFunc(HealthHandler)).Methods("GET")
+	router.Handle("/health", http.HandlerFunc(server.HealthHandler)).Methods("GET")
 	// /locations - retrieve a list of We We locations a user can leave feedback on
-	router.Handle("/locations", http.HandlerFunc(ListLocationsHandler)).Methods("GET")
+	router.Handle("/locations", http.HandlerFunc(server.ListLocationsHandler)).Methods("GET")
 	// /locations/{slug}/feedback - which will capture user feedback on locations
-	router.Handle("/locations/{slug}/feedback", http.HandlerFunc(AddLocationFeedback)).Methods("POST")
+	router.Handle("/locations/{slug}/feedback", http.HandlerFunc(server.AddLocationFeedback)).Methods("POST")
 
 	srv := &http.Server{
-		Handler: router,
+		Handler: handlers.LoggingHandler(os.Stdout, router),
 		Addr:    "127.0.0.1:3000",
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
