@@ -16,6 +16,8 @@ import (
 func main() {
 	router := mux.NewRouter()
 
+	jwtMiddleWare := server.NewJWTMiddleware()
+
 	// Setup Views & Static file handling on router
 	// On the default page we will simply serve our static index page.
 	router.Handle("/", http.FileServer(http.Dir("./views/")))
@@ -27,10 +29,17 @@ func main() {
 	// Setup API handling on router
 	// /health - health check
 	router.Handle("/health", http.HandlerFunc(server.HealthHandler)).Methods("GET")
+	// /get-token - get JWT
+	router.Handle("/get-token", http.HandlerFunc(server.GetTokenHandler)).Methods("GET")
+
 	// /locations - retrieve a list of We We locations a user can leave feedback on
-	router.Handle("/locations", http.HandlerFunc(server.ListLocationsHandler)).Methods("GET")
+	router.Handle("/locations",
+		jwtMiddleWare.Handler(http.HandlerFunc(server.ListLocationsHandler)),
+	).Methods("GET")
 	// /locations/{slug}/feedback - which will capture user feedback on locations
-	router.Handle("/locations/{slug}/feedback", http.HandlerFunc(server.AddLocationFeedback)).Methods("POST")
+	router.Handle("/locations/{slug}/feedback",
+		jwtMiddleWare.Handler(http.HandlerFunc(server.AddLocationFeedback)),
+	).Methods("POST")
 
 	srv := &http.Server{
 		Handler: handlers.LoggingHandler(os.Stdout, router),
