@@ -22,9 +22,9 @@ func main() {
 
 	// Setup API handling on router
 	// /health - health check
-	router.Handle("/health", http.HandlerFunc(NotImplementedHandler)).Methods("GET")
+	router.Handle("/health", http.HandlerFunc(HealthHandler)).Methods("GET")
 	// /locations - retrieve a list of We We locations a user can leave feedback on
-	router.Handle("/locations", http.HandlerFunc(NotImplementedHandler)).Methods("GET")
+	router.Handle("/locations", http.HandlerFunc(ListLocationsHandler)).Methods("GET")
 	// /locations/{slug}/feedback - which will capture user feedback on locations
 	router.Handle("/locations/{slug}/feebdack", http.HandlerFunc(NotImplementedHandler)).Methods("POST")
 
