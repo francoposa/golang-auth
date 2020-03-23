@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/francojposa/golang-auth/server"
+	"github.com/francojposa/golang-auth/auth0-jwt-example/server"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
