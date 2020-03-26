@@ -36,6 +36,6 @@ func GetTokenHandler(w http.ResponseWriter, r *http.Request) {
 	// Sign the token with our secret
 	tokenString, _ := token.SignedString(mySigningKey)
 
-	// Finally, write the token to the browser window
+	// Finally, write the token to the response
 	w.Write([]byte(tokenString))
 }
