@@ -1,4 +1,4 @@
-package sql
+package db
 
 import (
 	"fmt"
@@ -22,6 +22,7 @@ func NewDefaultPostgresConfig(appName, dbName string) PostgresConfig {
 	return PostgresConfig{
 		Host:                  "localhost",
 		Port:                  5432,
+		Username:              "postgres",
 		Database:              dbName,
 		ConnectTimeoutSeconds: 5,
 	}
