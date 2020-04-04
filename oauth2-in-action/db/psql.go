@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
+	// Makes postgres driver available to Golang's database/sql package
+	// https://www.calhoun.io/why-we-import-sql-drivers-with-the-blank-identifier/
 	_ "github.com/lib/pq"
 )
 
@@ -49,5 +51,5 @@ func buildConnectionString(pc PostgresConfig) string {
 
 func MustConnect(pc PostgresConfig) *sqlx.DB {
 	pgURL := buildConnectionString(pc)
-	return sqlx.MustConnect("postgres", pgURL)
+	return sqlx.MustConnect(pq, pgURL)
 }
