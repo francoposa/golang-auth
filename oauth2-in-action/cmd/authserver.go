@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/francojposa/golang-auth/oauth2-in-action/db"
+	"github.com/francojposa/golang-auth/oauth2-in-action/psql"
 )
 
 // authserverCmd represents the authserver command
@@ -21,8 +21,13 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("authserver called")
 
-		pgConfig := db.NewDefaultPostgresConfig("OAuth2InAction", "oauth2_in_action")
-		db.MustConnect(pgConfig)
+		pgConfig := psql.NewDefaultPostgresConfig("OAuth2InAction", "oauth2_in_action")
+		db := psql.MustConnect(pgConfig)
+
+		clientRepo := psql.PGClientRepo{Db: db}
+		client, _ := clientRepo.GetClient("idtest")
+
+		fmt.Println(client)
 
 	},
 }

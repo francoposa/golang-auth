@@ -1,4 +1,4 @@
-package db
+package psql
 
 import (
 	"fmt"
@@ -51,5 +51,5 @@ func buildConnectionString(pc PostgresConfig) string {
 
 func MustConnect(pc PostgresConfig) *sqlx.DB {
 	pgURL := buildConnectionString(pc)
-	return sqlx.MustConnect(pq, pgURL)
+	return sqlx.MustConnect("postgres", pgURL)
 }
