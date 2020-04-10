@@ -5,7 +5,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/francojposa/golang-auth/oauth2-in-action/psql"
+	"github.com/francojposa/golang-auth/oauth2-in-action/db"
+	"github.com/francojposa/golang-auth/oauth2-in-action/entities/resources"
 )
 
 // authserverCmd represents the authserver command
@@ -19,15 +20,22 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("authserver called")
 
-		pgConfig := psql.NewDefaultPostgresConfig("OAuth2InAction", "oauth2_in_action")
-		db := psql.MustConnect(pgConfig)
+		pgConfig := db.NewDefaultPostgresConfig("oauth2_in_action")
+		sqlxDB := db.MustConnect(pgConfig)
 
-		clientRepo := psql.PGClientRepo{Db: db}
-		client, _ := clientRepo.GetClient("idtest")
+		clientRepo := db.PGClientRepo{DB: sqlxDB}
 
-		fmt.Println(client)
+		client := resources.NewClient("example.com")
+		fmt.Printf("created Client in app: %q\n", client)
+
+		createdClient, _ := clientRepo.Create(client)
+
+		fmt.Printf("persisted Client in repo: %q\n", createdClient)
+
+		fetchedClient, _ := clientRepo.Get(createdClient.ID)
+
+		fmt.Printf("retrieved Client from repo: %q\n", fetchedClient)
 
 	},
 }

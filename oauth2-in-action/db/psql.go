@@ -1,4 +1,4 @@
-package psql
+package db
 
 import (
 	"fmt"
@@ -20,7 +20,7 @@ type PostgresConfig struct {
 }
 
 // NewDefaultPostgresConfig creates and return a default postgres configuration.
-func NewDefaultPostgresConfig(appName, dbName string) PostgresConfig {
+func NewDefaultPostgresConfig(dbName string) PostgresConfig {
 	return PostgresConfig{
 		Host:                  "localhost",
 		Port:                  5432,
@@ -33,7 +33,6 @@ func NewDefaultPostgresConfig(appName, dbName string) PostgresConfig {
 // buildConnectionString transforms the PostgresConfig into a usable connection string for lib/pq.
 // If a missing or invalid field is provided, an error is returned.
 func buildConnectionString(pc PostgresConfig) string {
-
 	auth := ""
 	if pc.Username != "" || pc.Password != "" {
 		auth = fmt.Sprintf("%s:%s@", pc.Username, pc.Password)
