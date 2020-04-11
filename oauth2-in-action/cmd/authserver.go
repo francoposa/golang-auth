@@ -2,11 +2,15 @@ package cmd
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 
 	"github.com/francojposa/golang-auth/oauth2-in-action/db"
-	"github.com/francojposa/golang-auth/oauth2-in-action/entities/resources"
+	"github.com/francojposa/golang-auth/oauth2-in-action/server"
 )
 
 // authserverCmd represents the authserver command
@@ -25,18 +29,22 @@ to quickly create a Cobra application.`,
 		sqlxDB := db.MustConnect(pgConfig)
 
 		clientRepo := db.PGClientRepo{DB: sqlxDB}
+		clientHandler := server.NewClientHandler(&clientRepo)
 
-		client := resources.NewClient("example.com")
-		fmt.Printf("created Client in app: %q\n", client)
+		router := mux.NewRouter()
 
-		createdClient, _ := clientRepo.Create(client)
+		router.HandleFunc("/credentials/{id}", clientHandler.GetClient).Methods("GET")
 
-		fmt.Printf("persisted Client in repo: %q\n", createdClient)
+		srv := &http.Server{
+			Handler: router,
+			Addr:    "127.0.0.1:5000",
+			// Good practice: enforce timeouts for servers
+			WriteTimeout: 15 * time.Second,
+			ReadTimeout:  15 * time.Second,
+		}
 
-		fetchedClient, _ := clientRepo.Get(createdClient.ID)
-
-		fmt.Printf("retrieved Client from repo: %q\n", fetchedClient)
-
+		fmt.Println("running http server on port 5000")
+		log.Fatal(srv.ListenAndServe())
 	},
 }
 

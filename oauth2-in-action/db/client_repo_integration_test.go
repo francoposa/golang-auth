@@ -7,14 +7,24 @@ import (
 	"github.com/francojposa/golang-auth/oauth2-in-action/entities/resources"
 )
 
-func TestPGClientRepo_Create(t *testing.T) {
+func TestPGClientRepo(t *testing.T) {
 	sqlxDB := SetUpDB(t)
-	SetUpDBData(t, sqlxDB)
-
 	clientRepo := PGClientRepo{DB: sqlxDB}
+
 	clientExample := resources.NewClient("example.com")
-	createdClientExample, _ := clientRepo.Create(clientExample)
-	assertClient(t, clientExample, createdClientExample)
+
+	t.Run("create client", func(t *testing.T) {
+		createdClientExample, _ := clientRepo.Create(clientExample)
+		assertClient(t, clientExample, createdClientExample)
+	})
+
+	t.Run("get created client", func(t *testing.T) {
+		retrievedClientExample, err := clientRepo.Get(clientExample.ID)
+		if err != nil {
+			t.Error(err)
+		}
+		assertClient(t, clientExample, retrievedClientExample)
+	})
 
 	TearDownDB(t)
 }

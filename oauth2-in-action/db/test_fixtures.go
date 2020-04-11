@@ -22,10 +22,6 @@ func SetUpDB(t *testing.T) *sqlx.DB {
 	return sqlxDb
 }
 
-func SetUpDBData(t *testing.T, sqlxDB *sqlx.DB) {
-	t.Helper()
-}
-
 func TearDownDB(t *testing.T) {
 	t.Helper()
 	pgConfig := NewDefaultPostgresConfig(testDBName)
@@ -42,7 +38,7 @@ func migrateUp(t *testing.T, pgConfig PostgresConfig) {
 		panic(err)
 	}
 	err = migration.Up()
-	if  err != nil && err.Error() != noChangeErr {
+	if err != nil && err.Error() != noChangeErr {
 		panic(err)
 	}
 }
