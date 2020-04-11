@@ -32,17 +32,17 @@ func TearDownDB(t *testing.T) {
 	migrateDown(t, pgConfig)
 }
 
-var noChangeErrString = "no change"
+var noChangeErr = "no change"
 
 func migrateUp(t *testing.T, pgConfig PostgresConfig) {
 	t.Helper()
 	pgURL := BuildConnectionString(pgConfig)
 	migration, err := migrate.New("file://db/migrations", pgURL)
-	if err != nil && err.Error() != noChangeErrString {
+	if err != nil && err.Error() != noChangeErr {
 		panic(err)
 	}
 	err = migration.Up()
-	if  err != nil && err.Error() != noChangeErrString {
+	if  err != nil && err.Error() != noChangeErr {
 		panic(err)
 	}
 }
