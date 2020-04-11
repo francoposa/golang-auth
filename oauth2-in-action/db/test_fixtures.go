@@ -32,14 +32,17 @@ func TearDownDB(t *testing.T) {
 	migrateDown(t, pgConfig)
 }
 
+var noChangeErrString = "no change"
+
 func migrateUp(t *testing.T, pgConfig PostgresConfig) {
 	t.Helper()
 	pgURL := BuildConnectionString(pgConfig)
-	migration, err := migrate.New("file://oauth2-in-action/db/migrations", pgURL)
-	if err != nil {
+	migration, err := migrate.New("file://db/migrations", pgURL)
+	if err != nil && err.Error() != noChangeErrString {
 		panic(err)
 	}
-	if err := migration.Up(); err != nil {
+	err = migration.Up()
+	if  err != nil && err.Error() != noChangeErrString {
 		panic(err)
 	}
 }
@@ -47,7 +50,7 @@ func migrateUp(t *testing.T, pgConfig PostgresConfig) {
 func migrateDown(t *testing.T, pgConfig PostgresConfig) {
 	t.Helper()
 	pgURL := BuildConnectionString(pgConfig)
-	migration, err := migrate.New("file://oauth2-in-action/db/migrations", pgURL)
+	migration, err := migrate.New("file://db/migrations", pgURL)
 	if err != nil {
 		panic(err)
 	}
