@@ -30,9 +30,9 @@ func NewDefaultPostgresConfig(dbName string) PostgresConfig {
 	}
 }
 
-// buildConnectionString transforms the PostgresConfig into a usable connection string for lib/pq.
+// BuildConnectionString transforms the PostgresConfig into a usable connection string for lib/pq.
 // If a missing or invalid field is provided, an error is returned.
-func buildConnectionString(pc PostgresConfig) string {
+func BuildConnectionString(pc PostgresConfig) string {
 	auth := ""
 	if pc.Username != "" || pc.Password != "" {
 		auth = fmt.Sprintf("%s:%s@", pc.Username, pc.Password)
@@ -48,7 +48,7 @@ func buildConnectionString(pc PostgresConfig) string {
 	return url
 }
 
-func MustConnect(pc PostgresConfig) *sqlx.DB {
-	pgURL := buildConnectionString(pc)
+func MustConnect(pgConfig PostgresConfig) *sqlx.DB {
+	pgURL := BuildConnectionString(pgConfig)
 	return sqlx.MustConnect("postgres", pgURL)
 }

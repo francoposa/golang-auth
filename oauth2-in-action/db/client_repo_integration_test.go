@@ -16,7 +16,7 @@ func TestPGClientRepo_Create(t *testing.T) {
 	createdClientExample, _ := clientRepo.Create(clientExample)
 	assertClient(t, clientExample, createdClientExample)
 
-	TearDownDBData(t, sqlxDB)
+	TearDownDB(t)
 }
 
 func assertClient(t *testing.T, want, got *resources.Client) {
