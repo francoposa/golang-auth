@@ -10,6 +10,8 @@ import (
 	_ "github.com/golang-migrate/migrate/source/file"
 
 	"github.com/jmoiron/sqlx"
+
+	"github.com/francojposa/golang-auth/oauth2-in-action/entities/resources"
 )
 
 var testDBName = "oauth2_in_action_test"
@@ -53,4 +55,22 @@ func migrateDown(t *testing.T, pgConfig PostgresConfig) {
 	if err := migration.Down(); err != nil {
 		panic(err)
 	}
+}
+
+func SetUpClientRepo(t *testing.T, sqlxDB *sqlx.DB) (PGClientRepo, []*resources.Client) {
+	t.Helper()
+	clientRepo := PGClientRepo{DB: sqlxDB}
+	clients := []*resources.Client{
+		resources.NewClient("qualtrics.com"),
+		resources.NewClient("telnyx.com"),
+		resources.NewClient("spothero.com"),
+	}
+
+	for _, client := range clients {
+		_, err := clientRepo.Create(client)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return clientRepo, clients
 }

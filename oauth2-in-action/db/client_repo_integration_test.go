@@ -9,21 +9,21 @@ import (
 
 func TestPGClientRepo(t *testing.T) {
 	sqlxDB := SetUpDB(t)
-	clientRepo := PGClientRepo{DB: sqlxDB}
-
-	clientExample := resources.NewClient("example.com")
+	clientRepo, stubClients := SetUpClientRepo(t, sqlxDB)
 
 	t.Run("create client", func(t *testing.T) {
+		clientExample := resources.NewClient("example.com")
 		createdClientExample, _ := clientRepo.Create(clientExample)
 		assertClient(t, clientExample, createdClientExample)
 	})
 
 	t.Run("get created client", func(t *testing.T) {
-		retrievedClientExample, err := clientRepo.Get(clientExample.ID)
+		stubClient := stubClients[0]
+		retrievedClientExample, err := clientRepo.Get(stubClient.ID)
 		if err != nil {
 			t.Error(err)
 		}
-		assertClient(t, clientExample, retrievedClientExample)
+		assertClient(t, stubClient, retrievedClientExample)
 	})
 
 	TearDownDB(t)
