@@ -17,7 +17,7 @@ func TestPGClientRepo(t *testing.T) {
 		assertClient(t, clientExample, createdClientExample)
 	})
 
-	t.Run("get created client", func(t *testing.T) {
+	t.Run("get client", func(t *testing.T) {
 		stubClient := stubClients[0]
 		retrievedClientExample, err := clientRepo.Get(stubClient.ID)
 		if err != nil {
