@@ -1,6 +1,9 @@
 package db
 
 import (
+	"fmt"
+	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/golang-migrate/migrate"
@@ -8,13 +11,12 @@ import (
 	_ "github.com/golang-migrate/migrate/database/postgres"
 	// Makes file url driver available to the migrate package
 	_ "github.com/golang-migrate/migrate/source/file"
-
 	"github.com/jmoiron/sqlx"
 
-	"github.com/francojposa/golang-auth/oauth2-in-action/entities/resources"
+	"golang-auth/entities/resources"
 )
 
-var testDBName = "oauth2_in_action_test"
+var testDBName = "golang_auth_test"
 
 func SetUpDB(t *testing.T) *sqlx.DB {
 	t.Helper()
@@ -34,8 +36,14 @@ var noChangeErr = "no change"
 
 func migrateUp(t *testing.T, pgConfig PostgresConfig) {
 	t.Helper()
+
 	pgURL := BuildConnectionString(pgConfig)
-	migration, err := migrate.New("file://db/migrations", pgURL)
+
+	_, dbTestFixturesPath, _, _ := runtime.Caller(1)
+	dbPath := filepath.Dir(dbTestFixturesPath)
+	migrationsPath := fmt.Sprintf("file://%s/migrations", dbPath)
+
+	migration, err := migrate.New(migrationsPath, pgURL)
 	if err != nil && err.Error() != noChangeErr {
 		panic(err)
 	}
@@ -48,7 +56,12 @@ func migrateUp(t *testing.T, pgConfig PostgresConfig) {
 func migrateDown(t *testing.T, pgConfig PostgresConfig) {
 	t.Helper()
 	pgURL := BuildConnectionString(pgConfig)
-	migration, err := migrate.New("file://db/migrations", pgURL)
+
+	_, dbTestFixturesPath, _, _ := runtime.Caller(1)
+	dbPath := filepath.Dir(dbTestFixturesPath)
+	migrationsPath := fmt.Sprintf("file://%s/migrations", dbPath)
+
+	migration, err := migrate.New(migrationsPath, pgURL)
 	if err != nil {
 		panic(err)
 	}

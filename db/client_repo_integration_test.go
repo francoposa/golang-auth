@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/francojposa/golang-auth/oauth2-in-action/entities/resources"
+	"golang-auth/entities/resources"
 )
 
 func TestPGClientRepo(t *testing.T) {

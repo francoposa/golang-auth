@@ -38,6 +38,7 @@ func TestClientHandler_POSTClient(t *testing.T) {
 		}
 	})
 
+	db.TearDownDB(t)
 }
 
 func newPOSTClientRequest(t *testing.T) *http.Request {
