@@ -62,10 +62,11 @@ func migrateDown(t *testing.T, pgConfig PostgresConfig) {
 	migrationsPath := fmt.Sprintf("file://%s/migrations", dbPath)
 
 	migration, err := migrate.New(migrationsPath, pgURL)
-	if err != nil {
+	if err != nil && err.Error() != noChangeErr {
 		panic(err)
 	}
-	if err := migration.Down(); err != nil {
+	err = migration.Down()
+	if err != nil && err.Error() != noChangeErr {
 		panic(err)
 	}
 }

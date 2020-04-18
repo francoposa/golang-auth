@@ -25,7 +25,7 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		pgConfig := db.NewDefaultPostgresConfig("oauth2_in_action")
+		pgConfig := db.NewDefaultPostgresConfig("golang_auth")
 		sqlxDB := db.MustConnect(pgConfig)
 
 		clientRepo := db.PGClientRepo{DB: sqlxDB}
