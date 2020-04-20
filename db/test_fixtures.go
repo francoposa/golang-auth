@@ -1,17 +1,18 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"path/filepath"
 	"runtime"
 	"testing"
 
-	"github.com/golang-migrate/migrate"
 	// Makes postgres driver available to the migrate package
 	_ "github.com/golang-migrate/migrate/database/postgres"
 	// Makes file url driver available to the migrate package
 	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/jmoiron/sqlx"
+	"github.com/pressly/goose"
 
 	"golang-auth/entities/resources"
 )
@@ -32,8 +33,6 @@ func TearDownDB(t *testing.T) {
 	migrateDown(t, pgConfig)
 }
 
-var noChangeErr = "no change"
-
 func migrateUp(t *testing.T, pgConfig PostgresConfig) {
 	t.Helper()
 
@@ -41,14 +40,15 @@ func migrateUp(t *testing.T, pgConfig PostgresConfig) {
 
 	_, dbTestFixturesPath, _, _ := runtime.Caller(1)
 	dbPath := filepath.Dir(dbTestFixturesPath)
-	migrationsPath := fmt.Sprintf("file://%s/migrations", dbPath)
+	migrationsPath := fmt.Sprintf("/%s/migrations", dbPath)
 
-	migration, err := migrate.New(migrationsPath, pgURL)
-	if err != nil && err.Error() != noChangeErr {
+	db, err := sql.Open("postgres", pgURL)
+	if err != nil {
 		panic(err)
 	}
-	err = migration.Up()
-	if err != nil && err.Error() != noChangeErr {
+
+	err = goose.Up(db, migrationsPath)
+	if err != nil && err == goose.ErrNoNextVersion {
 		panic(err)
 	}
 }
@@ -59,14 +59,15 @@ func migrateDown(t *testing.T, pgConfig PostgresConfig) {
 
 	_, dbTestFixturesPath, _, _ := runtime.Caller(1)
 	dbPath := filepath.Dir(dbTestFixturesPath)
-	migrationsPath := fmt.Sprintf("file://%s/migrations", dbPath)
+	migrationsPath := fmt.Sprintf("/%s/migrations", dbPath)
 
-	migration, err := migrate.New(migrationsPath, pgURL)
-	if err != nil && err.Error() != noChangeErr {
+	db, err := sql.Open("postgres", pgURL)
+	if err != nil {
 		panic(err)
 	}
-	err = migration.Down()
-	if err != nil && err.Error() != noChangeErr {
+
+	err = goose.Down(db, migrationsPath)
+	if err != nil {
 		panic(err)
 	}
 }
