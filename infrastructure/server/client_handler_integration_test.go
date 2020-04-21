@@ -10,7 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"golang-auth/db"
+	"golang-auth/infrastructure/db"
 	"golang-auth/usecases/resources"
 )
 

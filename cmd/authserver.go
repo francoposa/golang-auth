@@ -9,8 +9,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 
-	"golang-auth/db"
-	"golang-auth/server"
+	"golang-auth/infrastructure/db"
+	"golang-auth/infrastructure/server"
 )
 
 // authserverCmd represents the authserver command
