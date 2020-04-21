@@ -52,45 +52,48 @@ func (a Argon2PassHasher) Hash(password string) (string, error) {
 }
 
 func (a Argon2PassHasher) Verify(password, hash string) (bool, error) {
+	// hash is our known argon2 hash in the standard encoded representation
+	knownEncodedHashParts := strings.Split(hash, "$")
 
-	knownHashparts := strings.Split(hash, "$")
-
-	var memory uint32
-	var iterations uint32
-	var threads uint8
+	// Get metadata
+	var knownHashMemory uint32
+	var knownEncodedHashIterations uint32
+	var knownEncodedHashThreads uint8
 	_, err := fmt.Sscanf(
-		knownHashparts[3],
+		knownEncodedHashParts[3],
 		"m=%d,t=%d,p=%d",
-		&memory,
-		&iterations,
-		&threads,
+		&knownHashMemory,
+		&knownEncodedHashIterations,
+		&knownEncodedHashThreads,
 	)
 	if err != nil {
 		return false, err
 	}
 
-	knownHashSalt, err := base64.RawStdEncoding.DecodeString(knownHashparts[4])
+	b64Salt := knownEncodedHashParts[4]
+	knownDecodedHashSalt, err := base64.RawStdEncoding.DecodeString(b64Salt)
 	if err != nil {
 		return false, err
 	}
 
-	decodedKnownHash, err := base64.RawStdEncoding.DecodeString(knownHashparts[5])
+	b64Hash := knownEncodedHashParts[5]
+	knownDecodedHashKey, err := base64.RawStdEncoding.DecodeString(b64Hash)
 	if err != nil {
 		return false, err
 	}
 
-	keyLength := uint32(len(decodedKnownHash))
+	keyLength := uint32(len(knownDecodedHashKey))
 
 	candidateHash := argon2.IDKey(
 		[]byte(password),
-		knownHashSalt,
-		iterations,
-		memory,
-		threads,
+		knownDecodedHashSalt,
+		knownEncodedHashIterations,
+		knownHashMemory,
+		knownEncodedHashThreads,
 		keyLength,
 	)
 
-	if subtle.ConstantTimeCompare(decodedKnownHash, candidateHash) == 1 {
+	if subtle.ConstantTimeCompare(knownDecodedHashKey, candidateHash) == 1 {
 		return true, nil
 	}
 	return false, nil
