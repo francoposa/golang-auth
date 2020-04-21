@@ -14,7 +14,11 @@ type pgClientModel struct {
 }
 
 type PGClientRepo struct {
-	DB *sqlx.DB
+	db *sqlx.DB
+}
+
+func NewPGClientRepo(db *sqlx.DB) *PGClientRepo {
+	return &PGClientRepo{db: db}
 }
 
 var insertStatement = `
@@ -24,7 +28,7 @@ RETURNING id, secret, domain`
 
 func (r *PGClientRepo) Create(client *resources.Client) (*resources.Client, error) {
 	var cm pgClientModel
-	err := r.DB.QueryRowx(
+	err := r.db.QueryRowx(
 		insertStatement,
 		client.ID,
 		client.Secret,
@@ -43,7 +47,7 @@ WHERE id=$1
 
 func (r *PGClientRepo) Get(id uuid.UUID) (*resources.Client, error) {
 	var cm pgClientModel
-	err := r.DB.QueryRowx(selectByIDStatement, id).StructScan(&cm)
+	err := r.db.QueryRowx(selectByIDStatement, id).StructScan(&cm)
 	if err != nil {
 		return nil, err
 	}

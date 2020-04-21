@@ -74,7 +74,7 @@ func migrateDown(t *testing.T, pgConfig PostgresConfig) {
 
 func SetUpClientRepo(t *testing.T, sqlxDB *sqlx.DB) (PGClientRepo, []*resources.Client) {
 	t.Helper()
-	clientRepo := PGClientRepo{DB: sqlxDB}
+	clientRepo := PGClientRepo{db: sqlxDB}
 	clients := []*resources.Client{
 		resources.NewClient("qualtrics.com"),
 		resources.NewClient("telnyx.com"),

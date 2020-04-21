@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"golang-auth/infrastructure/crypto"
 	"log"
 	"net/http"
 	"time"
@@ -25,11 +26,34 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
+		passHasher := crypto.NewDefaultArgon2PassHasher()
+		hash, err := passHasher.Hash("test")
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(hash)
+
+		candidatePass := "test"
+		verified, err := passHasher.Verify(candidatePass, hash)
+		if verified {
+			fmt.Printf("candidate password %s verified\n", candidatePass)
+		} else {
+			fmt.Printf("candidate password %s not verified\n", candidatePass)
+		}
+
+		candidatePass = "yooo"
+		verified, err = passHasher.Verify(candidatePass, hash)
+		if verified {
+			fmt.Printf("candidate password %s verified\n", candidatePass)
+		} else {
+			fmt.Printf("candidate password %s not verified\n", candidatePass)
+		}
+
 		pgConfig := db.NewDefaultPostgresConfig("golang_auth")
 		sqlxDB := db.MustConnect(pgConfig)
 
-		clientRepo := db.PGClientRepo{DB: sqlxDB}
-		clientHandler := server.NewClientHandler(&clientRepo)
+		clientRepo := db.NewPGClientRepo(sqlxDB)
+		clientHandler := server.NewClientHandler(clientRepo)
 
 		router := mux.NewRouter()
 		router.HandleFunc("/credentials/", clientHandler.CreateClient).Methods("POST")
