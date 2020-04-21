@@ -14,7 +14,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/pressly/goose"
 
-	"golang-auth/entities/resources"
+	"golang-auth/usecases/resources"
 )
 
 var testDBName = "golang_auth_test"
@@ -66,7 +66,7 @@ func migrateDown(t *testing.T, pgConfig PostgresConfig) {
 		panic(err)
 	}
 
-	err = goose.Down(db, migrationsPath)
+	err = goose.DownTo(db, migrationsPath, 0)
 	if err != nil {
 		panic(err)
 	}

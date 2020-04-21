@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"golang-auth/entities/interfaces"
-	"golang-auth/entities/resources"
+	"golang-auth/usecases/interfaces"
+	"golang-auth/usecases/resources"
 )
 
 type httpPOSTClient struct {

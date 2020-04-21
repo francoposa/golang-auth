@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"golang-auth/entities/resources"
+	"golang-auth/usecases/resources"
 )
 
 func TestPGClientRepo(t *testing.T) {

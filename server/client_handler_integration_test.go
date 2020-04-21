@@ -11,7 +11,7 @@ import (
 	"github.com/gorilla/mux"
 
 	"golang-auth/db"
-	"golang-auth/entities/resources"
+	"golang-auth/usecases/resources"
 )
 
 func setupTestClientHandler(t *testing.T) *mux.Router {

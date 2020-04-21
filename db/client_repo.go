@@ -1,7 +1,7 @@
 package db
 
 import (
-	"golang-auth/entities/resources"
+	"golang-auth/usecases/resources"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
