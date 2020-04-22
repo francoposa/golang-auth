@@ -51,53 +51,55 @@ func (a Argon2PassHasher) Hash(password string) (string, error) {
 	return encodedHash, nil
 }
 
+// Verify checks a candidate password against a known hash using the argon2 hashing algorithm
 func (a Argon2PassHasher) Verify(password, hash string) (bool, error) {
 	// hash is our known argon2 hash in the standard encoded representation
 	knownEncodedHashParts := strings.Split(hash, "$")
 
-	// Get metadata
+	// Extract metadata from the known encoded argon2 hash
 	var knownHashMemory uint32
-	var knownEncodedHashIterations uint32
-	var knownEncodedHashThreads uint8
+	var knownHashIterations uint32
+	var knownHashThreads uint8
 	_, err := fmt.Sscanf(
 		knownEncodedHashParts[3],
 		"m=%d,t=%d,p=%d",
 		&knownHashMemory,
-		&knownEncodedHashIterations,
-		&knownEncodedHashThreads,
+		&knownHashIterations,
+		&knownHashThreads,
 	)
 	if err != nil {
 		return false, err
 	}
 
-	b64Salt := knownEncodedHashParts[4]
-	knownDecodedHashSalt, err := base64.RawStdEncoding.DecodeString(b64Salt)
+	// Base64 decode the salt from the known encoded argon2 hash
+	knownB64Salt := knownEncodedHashParts[4]
+	knownSalt, err := base64.RawStdEncoding.DecodeString(knownB64Salt)
 	if err != nil {
 		return false, err
 	}
 
-	b64Hash := knownEncodedHashParts[5]
-	knownDecodedHashKey, err := base64.RawStdEncoding.DecodeString(b64Hash)
+	// Base64 decode the password section from the known encoded argon2 hash
+	knownB64HashedPassword := knownEncodedHashParts[5]
+	knownHashedPassword, err := base64.RawStdEncoding.DecodeString(knownB64HashedPassword)
 	if err != nil {
 		return false, err
 	}
 
-	keyLength := uint32(len(knownDecodedHashKey))
+	keyLength := uint32(len(knownHashedPassword))
 
-	candidateHash := argon2.IDKey(
+	candidateHashedPassword := argon2.IDKey(
 		[]byte(password),
-		knownDecodedHashSalt,
-		knownEncodedHashIterations,
+		knownSalt,
+		knownHashIterations,
 		knownHashMemory,
-		knownEncodedHashThreads,
+		knownHashThreads,
 		keyLength,
 	)
 
-	if subtle.ConstantTimeCompare(knownDecodedHashKey, candidateHash) == 1 {
+	if subtle.ConstantTimeCompare(knownHashedPassword, candidateHashedPassword) == 1 {
 		return true, nil
 	}
 	return false, nil
-
 }
 
 func generateRandomSalt(n uint32) ([]byte, error) {
