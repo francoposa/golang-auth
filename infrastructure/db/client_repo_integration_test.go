@@ -25,8 +25,6 @@ func TestPGClientRepo(t *testing.T) {
 		}
 		assertClient(t, stubClient, retrievedClientExample)
 	})
-
-	TearDownDB(t)
 }
 
 func assertClient(t *testing.T, want, got *resources.Client) {

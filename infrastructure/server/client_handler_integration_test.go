@@ -37,8 +37,6 @@ func TestClientHandler_POSTClient(t *testing.T) {
 			t.Errorf("Unable to parse response body from server %q into Client", response.Body)
 		}
 	})
-
-	db.TearDownDB(t)
 }
 
 func newPOSTClientRequest(t *testing.T) *http.Request {

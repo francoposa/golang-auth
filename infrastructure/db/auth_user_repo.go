@@ -22,7 +22,7 @@ func (model pgAuthUserModel) toResource() *resources.AuthUser {
 	}
 }
 
-type PGAuthUserRepo struct {
+type pgAuthUserRepo struct {
 	db         *sqlx.DB
 	passHasher interfaces.PassHasher
 }
@@ -33,7 +33,7 @@ VALUES ($1, $2, $3, $4)
 RETURNING id, username, email
 `
 
-func (p PGAuthUserRepo) Create(user *resources.AuthUser, password string) (*resources.AuthUser, error) {
+func (p pgAuthUserRepo) Create(user *resources.AuthUser, password string) (*resources.AuthUser, error) {
 	hashedPassword, err := p.passHasher.Hash(password)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ var selectAuthUserByIDStatement = `
 SELECT * FROM auth_user WHERE id=$1
 `
 
-func (p PGAuthUserRepo) Get(id uuid.UUID) (*resources.AuthUser, error) {
+func (p pgAuthUserRepo) Get(id uuid.UUID) (*resources.AuthUser, error) {
 	var au pgAuthUserModel
 	err := p.db.QueryRowx(selectAuthUserByIDStatement, id).StructScan(&au)
 	if err != nil {
@@ -66,6 +66,6 @@ func (p PGAuthUserRepo) Get(id uuid.UUID) (*resources.AuthUser, error) {
 	return au.toResource(), nil
 }
 
-func (p PGAuthUserRepo) Verify(id uuid.UUID, password string) (bool, error) {
+func (p pgAuthUserRepo) Verify(id uuid.UUID, password string) (bool, error) {
 	return true, nil
 }

@@ -74,10 +74,10 @@ func migrateDown(t *testing.T, pgConfig PostgresConfig) {
 	}
 }
 
-func SetUpAuthUserRepo(t *testing.T, sqlxDB *sqlx.DB) (PGAuthUserRepo, []*resources.AuthUser) {
+func SetUpAuthUserRepo(t *testing.T, sqlxDB *sqlx.DB) (pgAuthUserRepo, []*resources.AuthUser) {
 	t.Helper()
 
-	authUserRepo := PGAuthUserRepo{
+	authUserRepo := pgAuthUserRepo{
 		db:         sqlxDB,
 		passHasher: crypto.NewDefaultArgon2PassHasher(),
 	}
@@ -96,9 +96,9 @@ func SetUpAuthUserRepo(t *testing.T, sqlxDB *sqlx.DB) (PGAuthUserRepo, []*resour
 	return authUserRepo, users
 }
 
-func SetUpClientRepo(t *testing.T, sqlxDB *sqlx.DB) (PGClientRepo, []*resources.Client) {
+func SetUpClientRepo(t *testing.T, sqlxDB *sqlx.DB) (pgClientRepo, []*resources.Client) {
 	t.Helper()
-	clientRepo := PGClientRepo{db: sqlxDB}
+	clientRepo := pgClientRepo{db: sqlxDB}
 	clients := []*resources.Client{
 		resources.NewClient("qualtrics.com"),
 		resources.NewClient("telnyx.com"),

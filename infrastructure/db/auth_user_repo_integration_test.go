@@ -25,8 +25,6 @@ func TestPGAuthUserRepo(t *testing.T) {
 		}
 		assertAuthUser(t, stubAuthUser, retrievedAuthUser)
 	})
-
-	TearDownDB(t)
 }
 
 func assertAuthUser(t *testing.T, want, got *resources.AuthUser) {
