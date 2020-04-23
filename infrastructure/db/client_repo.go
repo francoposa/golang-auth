@@ -13,6 +13,14 @@ type pgClientModel struct {
 	Domain string
 }
 
+func (model pgClientModel) toResource() *resources.Client {
+	return &resources.Client{
+		ID:     model.ID,
+		Secret: model.Secret,
+		Domain: model.Domain,
+	}
+}
+
 type PGClientRepo struct {
 	db *sqlx.DB
 }
@@ -21,43 +29,36 @@ func NewPGClientRepo(db *sqlx.DB) *PGClientRepo {
 	return &PGClientRepo{db: db}
 }
 
-var insertStatement = `
+var insertClientStatement = `
 INSERT INTO client (id, secret, domain) 
 VALUES ($1, $2, $3)
-RETURNING id, secret, domain`
+RETURNING id, secret, domain
+`
 
 func (r *PGClientRepo) Create(client *resources.Client) (*resources.Client, error) {
-	var cm pgClientModel
+	var c pgClientModel
 	err := r.db.QueryRowx(
-		insertStatement,
+		insertClientStatement,
 		client.ID,
 		client.Secret,
 		client.Domain,
-	).StructScan(&cm)
+	).StructScan(&c)
 	if err != nil {
 		return nil, err
 	}
-	return cm.toEntity(), err
+	return c.toResource(), err
 }
 
-var selectByIDStatement = `
+var selectClientByIDStatement = `
 SELECT * FROM client
 WHERE id=$1
 `
 
 func (r *PGClientRepo) Get(id uuid.UUID) (*resources.Client, error) {
-	var cm pgClientModel
-	err := r.db.QueryRowx(selectByIDStatement, id).StructScan(&cm)
+	var c pgClientModel
+	err := r.db.QueryRowx(selectClientByIDStatement, id).StructScan(&c)
 	if err != nil {
 		return nil, err
 	}
-	return cm.toEntity(), err
-}
-
-func (model pgClientModel) toEntity() *resources.Client {
-	return &resources.Client{
-		ID:     model.ID,
-		Secret: model.Secret,
-		Domain: model.Domain,
-	}
+	return c.toResource(), err
 }

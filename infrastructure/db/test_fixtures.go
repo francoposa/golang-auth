@@ -14,6 +14,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/pressly/goose"
 
+	"golang-auth/infrastructure/crypto"
 	"golang-auth/usecases/resources"
 )
 
@@ -70,6 +71,28 @@ func migrateDown(t *testing.T, pgConfig PostgresConfig) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func SetUpAuthUserRepo(t *testing.T, sqlxDB *sqlx.DB) (PGAuthUserRepo, []*resources.AuthUser) {
+	t.Helper()
+
+	authUserRepo := PGAuthUserRepo{
+		db:         sqlxDB,
+		passHasher: crypto.NewDefaultArgon2PassHasher(),
+	}
+	users := []*resources.AuthUser{
+		resources.NewAuthUser("domtoretto", "americanmuscle@fastnfurious.com"),
+		resources.NewAuthUser("brian", "importtuners@fastnfurious.com"),
+		resources.NewAuthUser("roman", "ejectoseat@fastnfurious.com"),
+	}
+
+	for _, user := range users {
+		_, err := authUserRepo.Create(user, user.Username)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return authUserRepo, users
 }
 
 func SetUpClientRepo(t *testing.T, sqlxDB *sqlx.DB) (PGClientRepo, []*resources.Client) {

@@ -7,3 +7,8 @@ type AuthUser struct {
 	Username string
 	Email    string
 }
+
+func NewAuthUser(username, email string) *AuthUser {
+	id := uuid.New()
+	return &AuthUser{ID: id, Username: username, Email: email}
+}
