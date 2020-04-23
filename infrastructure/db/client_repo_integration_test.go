@@ -1,35 +1,40 @@
 package db
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"golang-auth/usecases/resources"
 )
 
 func TestPGClientRepo(t *testing.T) {
+	assertions := assert.New(t)
+
 	sqlxDB := SetUpDB(t)
-	clientRepo, stubClients := SetUpClientRepo(t, sqlxDB)
+	clientRepo, _ := SetUpClientRepo(t, sqlxDB)
+
+	client := resources.NewClient("example.com")
 
 	t.Run("create client", func(t *testing.T) {
-		clientExample := resources.NewClient("example.com")
-		createdClientExample, _ := clientRepo.Create(clientExample)
-		assertClient(t, clientExample, createdClientExample)
-	})
-
-	t.Run("get client", func(t *testing.T) {
-		stubClient := stubClients[0]
-		retrievedClientExample, err := clientRepo.Get(stubClient.ID)
+		createdClient, err := clientRepo.Create(client)
 		if err != nil {
 			t.Error(err)
 		}
-		assertClient(t, stubClient, retrievedClientExample)
+		assertClient(assertions, client, createdClient)
+	})
+
+	t.Run("get client", func(t *testing.T) {
+		retrievedClient, err := clientRepo.Get(client.ID)
+		if err != nil {
+			t.Error(err)
+		}
+		assertClient(assertions, client, retrievedClient)
 	})
 }
 
-func assertClient(t *testing.T, want, got *resources.Client) {
-	t.Helper()
-	if !reflect.DeepEqual(want, got) {
-		t.Errorf("\nincorrect client resource\nwant: %q, got: %q", want, got)
-	}
+func assertClient(a *assert.Assertions, want, got *resources.Client) {
+	a.Equal(
+		want, got, "expected equivalent structs, want: %q, got: %q", want, got,
+	)
 }

@@ -9,7 +9,8 @@ import (
 )
 
 func TestPGAuthUserRepo(t *testing.T) {
-	assert := assert.New(t)
+	assertions := assert.New(t)
+
 	sqlxDB := SetUpDB(t)
 	authUserRepo, _ := SetUpAuthUserRepo(t, sqlxDB)
 
@@ -17,13 +18,7 @@ func TestPGAuthUserRepo(t *testing.T) {
 
 	t.Run("create auth user", func(t *testing.T) {
 		createdAuthUser, _ := authUserRepo.Create(authUser, "suki_pass")
-		assert.Equal(
-			authUser,
-			createdAuthUser,
-			"expected equivalent structs, want: %q, got: %q",
-			authUser,
-			createdAuthUser,
-		)
+		assertAuthUser(assertions, authUser, createdAuthUser)
 	})
 
 	t.Run("get auth user", func(t *testing.T) {
@@ -31,13 +26,7 @@ func TestPGAuthUserRepo(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		assert.Equal(
-			authUser,
-			retrievedAuthUser,
-			"expected equivalent structs, want: %q, got: %q",
-			authUser,
-			retrievedAuthUser,
-		)
+		assertAuthUser(assertions, authUser, retrievedAuthUser)
 	})
 
 	t.Run("verify auth user password", func(t *testing.T) {
@@ -45,12 +34,18 @@ func TestPGAuthUserRepo(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		assert.True(verified, "correct password was not verified")
+		assertions.True(verified, "correct password was not verified")
 
 		verified, err = authUserRepo.Verify(authUser.ID, "Suki_pass")
 		if err != nil {
 			t.Error(err)
 		}
-		assert.False(verified, "incorrect password was verified")
+		assertions.False(verified, "incorrect password was verified")
 	})
+}
+
+func assertAuthUser(a *assert.Assertions, want, got *resources.AuthUser) {
+	a.Equal(
+		want, got, "expected equivalent structs, want: %q, got: %q", want, got,
+	)
 }
