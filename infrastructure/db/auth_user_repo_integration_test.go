@@ -9,12 +9,21 @@ import (
 
 func TestPGAuthUserRepo(t *testing.T) {
 	sqlxDB := SetUpDB(t)
-	authUserRepo, _ := SetUpAuthUserRepo(t, sqlxDB)
+	authUserRepo, stubAuthUsers := SetUpAuthUserRepo(t, sqlxDB)
 
 	t.Run("create auth user", func(t *testing.T) {
-		authUserExample := resources.NewAuthUser("suki", "pink2000@honda.com")
-		createdAuthUserExample, _ := authUserRepo.Create(authUserExample, "suki")
-		assertAuthUser(t, authUserExample, createdAuthUserExample)
+		authUser := resources.NewAuthUser("suki", "pink2000@honda.com")
+		createdAuthUser, _ := authUserRepo.Create(authUser, "suki")
+		assertAuthUser(t, authUser, createdAuthUser)
+	})
+
+	t.Run("get auth user", func(t *testing.T) {
+		stubAuthUser := stubAuthUsers[0]
+		retrievedAuthUser, err := authUserRepo.Get(stubAuthUser.ID)
+		if err != nil {
+			t.Error(err)
+		}
+		assertAuthUser(t, stubAuthUser, retrievedAuthUser)
 	})
 
 	TearDownDB(t)

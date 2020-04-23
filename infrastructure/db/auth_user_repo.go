@@ -11,6 +11,7 @@ type pgAuthUserModel struct {
 	ID       uuid.UUID
 	Username string
 	Email    string
+	Password string
 }
 
 func (model pgAuthUserModel) toResource() *resources.AuthUser {
@@ -24,10 +25,6 @@ func (model pgAuthUserModel) toResource() *resources.AuthUser {
 type PGAuthUserRepo struct {
 	db         *sqlx.DB
 	passHasher interfaces.PassHasher
-}
-
-func (p PGAuthUserRepo) Get(id uuid.UUID) (*resources.AuthUser, error) {
-	panic("implement me")
 }
 
 var insertAuthuserStatement = `
@@ -56,6 +53,19 @@ func (p PGAuthUserRepo) Create(user *resources.AuthUser, password string) (*reso
 	return au.toResource(), err
 }
 
+var selectAuthUserByIDStatement = `
+SELECT * FROM auth_user WHERE id=$1
+`
+
+func (p PGAuthUserRepo) Get(id uuid.UUID) (*resources.AuthUser, error) {
+	var au pgAuthUserModel
+	err := p.db.QueryRowx(selectAuthUserByIDStatement, id).StructScan(&au)
+	if err != nil {
+		return nil, err
+	}
+	return au.toResource(), nil
+}
+
 func (p PGAuthUserRepo) Verify(id uuid.UUID, password string) (bool, error) {
-	panic("implement me")
+	return true, nil
 }

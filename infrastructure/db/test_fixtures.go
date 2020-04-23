@@ -23,6 +23,7 @@ var testDBName = "golang_auth_test"
 func SetUpDB(t *testing.T) *sqlx.DB {
 	t.Helper()
 	pgConfig := NewDefaultPostgresConfig(testDBName)
+	migrateDown(t, pgConfig)
 	migrateUp(t, pgConfig)
 	sqlxDb := MustConnect(pgConfig)
 	return sqlxDb
