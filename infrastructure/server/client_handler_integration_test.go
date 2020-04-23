@@ -17,7 +17,7 @@ import (
 func setupTestClientHandler(t *testing.T) *mux.Router {
 	sqlxDB := db.SetUpDB(t)
 	clientRepo, _ := db.SetUpClientRepo(t, sqlxDB)
-	clientHandler := ClientHandler{repo: &clientRepo}
+	clientHandler := ClientHandler{repo: clientRepo}
 
 	router := mux.NewRouter()
 	router.HandleFunc("/credentials/", clientHandler.CreateClient).Methods("POST")

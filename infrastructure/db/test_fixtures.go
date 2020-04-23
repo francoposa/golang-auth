@@ -15,6 +15,7 @@ import (
 	"github.com/pressly/goose"
 
 	"golang-auth/infrastructure/crypto"
+	"golang-auth/usecases/interfaces"
 	"golang-auth/usecases/resources"
 )
 
@@ -74,7 +75,7 @@ func migrateDown(t *testing.T, pgConfig PostgresConfig) {
 	}
 }
 
-func SetUpAuthUserRepo(t *testing.T, sqlxDB *sqlx.DB) (pgAuthUserRepo, []*resources.AuthUser) {
+func SetUpAuthUserRepo(t *testing.T, sqlxDB *sqlx.DB) (interfaces.AuthUserRepo, []*resources.AuthUser) {
 	t.Helper()
 
 	authUserRepo := pgAuthUserRepo{
@@ -88,15 +89,15 @@ func SetUpAuthUserRepo(t *testing.T, sqlxDB *sqlx.DB) (pgAuthUserRepo, []*resour
 	}
 
 	for _, user := range users {
-		_, err := authUserRepo.Create(user, user.Username)
+		_, err := authUserRepo.Create(user, fmt.Sprintf("%s_pass", user.Username))
 		if err != nil {
 			panic(err)
 		}
 	}
-	return authUserRepo, users
+	return &authUserRepo, users
 }
 
-func SetUpClientRepo(t *testing.T, sqlxDB *sqlx.DB) (pgClientRepo, []*resources.Client) {
+func SetUpClientRepo(t *testing.T, sqlxDB *sqlx.DB) (interfaces.ClientRepo, []*resources.Client) {
 	t.Helper()
 	clientRepo := pgClientRepo{db: sqlxDB}
 	clients := []*resources.Client{
@@ -111,5 +112,5 @@ func SetUpClientRepo(t *testing.T, sqlxDB *sqlx.DB) (pgClientRepo, []*resources.
 			panic(err)
 		}
 	}
-	return clientRepo, clients
+	return &clientRepo, clients
 }

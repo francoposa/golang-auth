@@ -33,14 +33,14 @@ VALUES ($1, $2, $3, $4)
 RETURNING id, username, email
 `
 
-func (p pgAuthUserRepo) Create(user *resources.AuthUser, password string) (*resources.AuthUser, error) {
-	hashedPassword, err := p.passHasher.Hash(password)
+func (r *pgAuthUserRepo) Create(user *resources.AuthUser, password string) (*resources.AuthUser, error) {
+	hashedPassword, err := r.passHasher.Hash(password)
 	if err != nil {
 		return nil, err
 	}
 
 	var au pgAuthUserModel
-	err = p.db.QueryRowx(
+	err = r.db.QueryRowx(
 		insertAuthuserStatement,
 		user.ID,
 		user.Username,
@@ -57,15 +57,21 @@ var selectAuthUserByIDStatement = `
 SELECT * FROM auth_user WHERE id=$1
 `
 
-func (p pgAuthUserRepo) Get(id uuid.UUID) (*resources.AuthUser, error) {
+func (r *pgAuthUserRepo) Get(id uuid.UUID) (*resources.AuthUser, error) {
 	var au pgAuthUserModel
-	err := p.db.QueryRowx(selectAuthUserByIDStatement, id).StructScan(&au)
+	err := r.db.QueryRowx(selectAuthUserByIDStatement, id).StructScan(&au)
 	if err != nil {
 		return nil, err
 	}
 	return au.toResource(), nil
 }
 
-func (p pgAuthUserRepo) Verify(id uuid.UUID, password string) (bool, error) {
-	return true, nil
+func (r *pgAuthUserRepo) Verify(id uuid.UUID, password string) (bool, error) {
+	var au pgAuthUserModel
+	err := r.db.QueryRowx(selectAuthUserByIDStatement, id).StructScan(&au)
+	if err != nil {
+		return false, err
+	}
+
+	return r.passHasher.Verify(password, au.Password)
 }

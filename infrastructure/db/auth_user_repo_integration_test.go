@@ -1,35 +1,56 @@
 package db
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"golang-auth/usecases/resources"
 )
 
 func TestPGAuthUserRepo(t *testing.T) {
+	assert := assert.New(t)
 	sqlxDB := SetUpDB(t)
-	authUserRepo, stubAuthUsers := SetUpAuthUserRepo(t, sqlxDB)
+	authUserRepo, _ := SetUpAuthUserRepo(t, sqlxDB)
+
+	authUser := resources.NewAuthUser("suki", "pink2000@honda.com")
 
 	t.Run("create auth user", func(t *testing.T) {
-		authUser := resources.NewAuthUser("suki", "pink2000@honda.com")
-		createdAuthUser, _ := authUserRepo.Create(authUser, "suki")
-		assertAuthUser(t, authUser, createdAuthUser)
+		createdAuthUser, _ := authUserRepo.Create(authUser, "suki_pass")
+		assert.Equal(
+			authUser,
+			createdAuthUser,
+			"expected equivalent structs, want: %q, got: %q",
+			authUser,
+			createdAuthUser,
+		)
 	})
 
 	t.Run("get auth user", func(t *testing.T) {
-		stubAuthUser := stubAuthUsers[0]
-		retrievedAuthUser, err := authUserRepo.Get(stubAuthUser.ID)
+		retrievedAuthUser, err := authUserRepo.Get(authUser.ID)
 		if err != nil {
 			t.Error(err)
 		}
-		assertAuthUser(t, stubAuthUser, retrievedAuthUser)
+		assert.Equal(
+			authUser,
+			retrievedAuthUser,
+			"expected equivalent structs, want: %q, got: %q",
+			authUser,
+			retrievedAuthUser,
+		)
 	})
-}
 
-func assertAuthUser(t *testing.T, want, got *resources.AuthUser) {
-	t.Helper()
-	if !reflect.DeepEqual(want, got) {
-		t.Errorf("\nincorrect client resource\nwant: %q, got: %q", want, got)
-	}
+	t.Run("verify auth user password", func(t *testing.T) {
+		verified, err := authUserRepo.Verify(authUser.ID, "suki_pass")
+		if err != nil {
+			t.Error(err)
+		}
+		assert.True(verified, "correct password was not verified")
+
+		verified, err = authUserRepo.Verify(authUser.ID, "Suki_pass")
+		if err != nil {
+			t.Error(err)
+		}
+		assert.False(verified, "incorrect password was verified")
+	})
 }
