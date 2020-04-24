@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/assert"
 
 	"golang-auth/infrastructure/db"
 	"golang-auth/usecases/resources"
@@ -20,17 +21,22 @@ func setupTestClientHandler(t *testing.T) *mux.Router {
 	clientHandler := ClientHandler{repo: clientRepo}
 
 	router := mux.NewRouter()
-	router.HandleFunc("/credentials/", clientHandler.CreateClient).Methods("POST")
+	router.HandleFunc("/client/", clientHandler.Create).Methods("POST")
 
 	return router
 }
 
 func TestClientHandler_POSTClient(t *testing.T) {
+	assertions := assert.New(t)
 	clientHandler := setupTestClientHandler(t)
 
 	t.Run("POST new client - success", func(t *testing.T) {
 		response := httptest.NewRecorder()
-		clientHandler.ServeHTTP(response, newPOSTClientRequest(t))
+		body := map[string]string{"Domain": "example"}
+		clientHandler.ServeHTTP(response, newPOSTClientRequest(t, body))
+
+		assertions.Equal(201, response.Code, "Expected HTTP 201, got: %d", response.Code)
+
 		createdClient := resources.Client{}
 		err := json.NewDecoder(response.Body).Decode(&createdClient)
 		if err != nil {
@@ -39,10 +45,9 @@ func TestClientHandler_POSTClient(t *testing.T) {
 	})
 }
 
-func newPOSTClientRequest(t *testing.T) *http.Request {
+func newPOSTClientRequest(t *testing.T, body map[string]string) *http.Request {
 	t.Helper()
-	body := map[string]string{"Domain": "example"}
 	jsonBody, _ := json.Marshal(body)
-	req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/credentials/"), bytes.NewBuffer(jsonBody))
+	req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/client/"), bytes.NewBuffer(jsonBody))
 	return req
 }

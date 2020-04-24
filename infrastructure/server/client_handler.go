@@ -20,7 +20,7 @@ func NewClientHandler(repo interfaces.ClientRepo) *ClientHandler {
 	return &ClientHandler{repo: repo}
 }
 
-func (c *ClientHandler) CreateClient(w http.ResponseWriter, r *http.Request) {
+func (h *ClientHandler) Create(w http.ResponseWriter, r *http.Request) {
 	postedClient := httpPOSTClient{}
 	err := json.NewDecoder(r.Body).Decode(&postedClient)
 	if err != nil || postedClient.Domain == "" {
@@ -29,7 +29,7 @@ func (c *ClientHandler) CreateClient(w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := resources.NewClient(postedClient.Domain)
-	repoClient, err := c.repo.Create(client)
+	repoClient, err := h.repo.Create(client)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	} else {

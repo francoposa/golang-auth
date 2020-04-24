@@ -53,22 +53,22 @@ func (r *pgAuthUserRepo) Create(user *resources.AuthUser, password string) (*res
 	return au.toResource(), err
 }
 
-var selectAuthUserByIDStatement = `
-SELECT * FROM auth_user WHERE id=$1
+var selectAuthUserByUsernameStatement = `
+SELECT * FROM auth_user WHERE username=$1
 `
 
-func (r *pgAuthUserRepo) Get(id uuid.UUID) (*resources.AuthUser, error) {
+func (r *pgAuthUserRepo) Get(username string) (*resources.AuthUser, error) {
 	var au pgAuthUserModel
-	err := r.db.QueryRowx(selectAuthUserByIDStatement, id).StructScan(&au)
+	err := r.db.QueryRowx(selectAuthUserByUsernameStatement, username).StructScan(&au)
 	if err != nil {
 		return nil, err
 	}
 	return au.toResource(), nil
 }
 
-func (r *pgAuthUserRepo) Verify(id uuid.UUID, password string) (bool, error) {
+func (r *pgAuthUserRepo) Verify(username string, password string) (bool, error) {
 	var au pgAuthUserModel
-	err := r.db.QueryRowx(selectAuthUserByIDStatement, id).StructScan(&au)
+	err := r.db.QueryRowx(selectAuthUserByUsernameStatement, username).StructScan(&au)
 	if err != nil {
 		return false, err
 	}

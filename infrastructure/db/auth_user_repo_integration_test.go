@@ -22,7 +22,7 @@ func TestPGAuthUserRepo(t *testing.T) {
 	})
 
 	t.Run("get auth user", func(t *testing.T) {
-		retrievedAuthUser, err := authUserRepo.Get(authUser.ID)
+		retrievedAuthUser, err := authUserRepo.Get(authUser.Username)
 		if err != nil {
 			t.Error(err)
 		}
@@ -30,13 +30,13 @@ func TestPGAuthUserRepo(t *testing.T) {
 	})
 
 	t.Run("verify auth user password", func(t *testing.T) {
-		verified, err := authUserRepo.Verify(authUser.ID, "suki_pass")
+		verified, err := authUserRepo.Verify(authUser.Username, "suki_pass")
 		if err != nil {
 			t.Error(err)
 		}
 		assertions.True(verified, "correct password was not verified")
 
-		verified, err = authUserRepo.Verify(authUser.ID, "Suki_pass")
+		verified, err = authUserRepo.Verify(authUser.Username, "Suki_pass")
 		if err != nil {
 			t.Error(err)
 		}

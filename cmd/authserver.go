@@ -35,7 +35,7 @@ to quickly create a Cobra application.`,
 		clientHandler := server.NewClientHandler(clientRepo)
 
 		router := mux.NewRouter()
-		router.HandleFunc("/credentials/", clientHandler.CreateClient).Methods("POST")
+		router.HandleFunc("/credentials/", clientHandler.Create).Methods("POST")
 
 		srv := &http.Server{
 			Handler: router,
