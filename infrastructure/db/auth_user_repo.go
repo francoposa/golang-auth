@@ -27,6 +27,10 @@ type pgAuthUserRepo struct {
 	passHasher interfaces.PassHasher
 }
 
+func NewPGAuthUserRepo(db *sqlx.DB, passHasher interfaces.PassHasher) *pgAuthUserRepo {
+	return &pgAuthUserRepo{db: db, passHasher: passHasher}
+}
+
 var insertAuthuserStatement = `
 INSERT INTO auth_user (id, username, email, password) 
 VALUES ($1, $2, $3, $4)

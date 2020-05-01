@@ -15,6 +15,10 @@ type AuthUserHandler struct {
 	repo interfaces.AuthUserRepo
 }
 
+func NewAuthUserHandler(repo interfaces.AuthUserRepo) *AuthUserHandler {
+	return &AuthUserHandler{repo: repo}
+}
+
 func (h *AuthUserHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
 	postedUserAuth := httpUserAuthentication{}
 	err := json.NewDecoder(r.Body).Decode(&postedUserAuth)

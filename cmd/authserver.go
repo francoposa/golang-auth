@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"github.com/spf13/cobra"
 
 	"golang-auth/infrastructure/crypto"
@@ -26,19 +27,28 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		_ = crypto.NewDefaultArgon2PassHasher()
+		passHasher := crypto.NewDefaultArgon2PassHasher()
 
 		pgConfig := db.NewDefaultPostgresConfig("golang_auth")
 		sqlxDB := db.MustConnect(pgConfig)
 
+		authUserRepo := db.NewPGAuthUserRepo(sqlxDB, passHasher)
+		authUserHandler := server.NewAuthUserHandler(authUserRepo)
+
 		clientRepo := db.NewPGClientRepo(sqlxDB)
 		clientHandler := server.NewClientHandler(clientRepo)
 
+		authHandler := server.AuthorizationHandler{}
+
 		router := mux.NewRouter()
-		router.HandleFunc("/credentials/", clientHandler.Create).Methods("POST")
+		router.HandleFunc("/authorize", authHandler.Authorize).Methods("GET", "POST")
+		router.HandleFunc("/login", authUserHandler.Authenticate).Methods("POST")
+		router.HandleFunc("/client", clientHandler.Create).Methods("POST")
+
+		handler := cors.Default().Handler(router)
 
 		srv := &http.Server{
-			Handler: router,
+			Handler: handler,
 			Addr:    "127.0.0.1:5000",
 			// Good practice: enforce timeouts for servers
 			WriteTimeout: 15 * time.Second,

@@ -14,22 +14,29 @@ func TestPGClientRepo(t *testing.T) {
 	sqlxDB := SetUpDB(t)
 	clientRepo, _ := SetUpClientRepo(t, sqlxDB)
 
-	client := resources.NewClient("example.com")
+	publicClient, err := resources.NewClient("telnyx.com", true)
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = resources.NewClient("spothero.com", false)
+	if err != nil {
+		t.Error(err)
+	}
 
-	t.Run("create client", func(t *testing.T) {
-		createdClient, err := clientRepo.Create(client)
+	t.Run("create public client", func(t *testing.T) {
+		createdClient, err := clientRepo.Create(publicClient)
 		if err != nil {
 			t.Error(err)
 		}
-		assertClient(assertions, client, createdClient)
+		assertClient(assertions, publicClient, createdClient)
 	})
 
-	t.Run("get client", func(t *testing.T) {
-		retrievedClient, err := clientRepo.Get(client.ID)
+	t.Run("get publicClient", func(t *testing.T) {
+		retrievedClient, err := clientRepo.Get(publicClient.ID)
 		if err != nil {
 			t.Error(err)
 		}
-		assertClient(assertions, client, retrievedClient)
+		assertClient(assertions, publicClient, retrievedClient)
 	})
 }
 

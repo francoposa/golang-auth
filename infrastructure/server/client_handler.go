@@ -2,14 +2,32 @@ package server
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	"net/http"
 
 	"golang-auth/usecases/interfaces"
 	"golang-auth/usecases/resources"
 )
 
-type httpPOSTClient struct {
-	Domain string
+type httpPOSTRequestClient struct {
+	RedirectURI string
+	Public      bool
+}
+
+type httpResponseClient struct {
+	ID          *uuid.UUID
+	Secret      *uuid.UUID
+	RedirectURI string
+	Public      bool
+}
+
+func responseClientFromResource(resource *resources.Client) httpResponseClient {
+	return httpResponseClient{
+		ID:          resource.ID,
+		Secret:      resource.Secret,
+		RedirectURI: resource.RedirectURI.String(),
+		Public:      resource.Public,
+	}
 }
 
 type ClientHandler struct {
@@ -21,20 +39,26 @@ func NewClientHandler(repo interfaces.ClientRepo) *ClientHandler {
 }
 
 func (h *ClientHandler) Create(w http.ResponseWriter, r *http.Request) {
-	postedClient := httpPOSTClient{}
+	postedClient := httpPOSTRequestClient{}
 	err := json.NewDecoder(r.Body).Decode(&postedClient)
-	if err != nil || postedClient.Domain == "" {
+	if err != nil || postedClient.RedirectURI == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	client := resources.NewClient(postedClient.Domain)
+	client, err := resources.NewClient(postedClient.RedirectURI, postedClient.Public)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	repoClient, err := h.repo.Create(client)
+	responseClient := responseClientFromResource(repoClient)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	} else {
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(repoClient)
+		json.NewEncoder(w).Encode(responseClient)
 	}
 }
 

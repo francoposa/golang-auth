@@ -2,22 +2,26 @@ package db
 
 import (
 	"golang-auth/usecases/resources"
+	"net/url"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
 type pgClientModel struct {
-	ID     uuid.UUID
-	Secret uuid.UUID
-	Domain string
+	ID          *uuid.UUID
+	Secret      *uuid.UUID
+	RedirectURI string `db:"redirect_uri"`
+	Public      bool
 }
 
 func (model pgClientModel) toResource() *resources.Client {
+	uri, _ := url.Parse(model.RedirectURI)
 	return &resources.Client{
-		ID:     model.ID,
-		Secret: model.Secret,
-		Domain: model.Domain,
+		ID:          model.ID,
+		Secret:      model.Secret,
+		RedirectURI: uri,
+		Public:      model.Public,
 	}
 }
 
@@ -30,9 +34,9 @@ func NewPGClientRepo(db *sqlx.DB) *pgClientRepo {
 }
 
 var insertClientStatement = `
-INSERT INTO client (id, secret, domain) 
-VALUES ($1, $2, $3)
-RETURNING id, secret, domain
+INSERT INTO client (id, secret, redirect_uri, public) 
+VALUES ($1, $2, $3, $4)
+RETURNING id, secret, redirect_uri, public
 `
 
 func (r *pgClientRepo) Create(client *resources.Client) (*resources.Client, error) {
@@ -41,7 +45,8 @@ func (r *pgClientRepo) Create(client *resources.Client) (*resources.Client, erro
 		insertClientStatement,
 		client.ID,
 		client.Secret,
-		client.Domain,
+		client.RedirectURI.String(),
+		client.Public,
 	).StructScan(&c)
 	if err != nil {
 		return nil, err
@@ -54,7 +59,7 @@ SELECT * FROM client
 WHERE id=$1
 `
 
-func (r *pgClientRepo) Get(id uuid.UUID) (*resources.Client, error) {
+func (r *pgClientRepo) Get(id *uuid.UUID) (*resources.Client, error) {
 	var c pgClientModel
 	err := r.db.QueryRowx(selectClientByIDStatement, id).StructScan(&c)
 	if err != nil {

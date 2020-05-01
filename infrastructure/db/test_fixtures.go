@@ -69,7 +69,7 @@ func migrateDown(t *testing.T, pgConfig PostgresConfig) {
 		panic(err)
 	}
 
-	err = goose.DownTo(db, migrationsPath, 0)
+	err = goose.Reset(db, migrationsPath)
 	if err != nil {
 		panic(err)
 	}
@@ -100,11 +100,7 @@ func SetUpAuthUserRepo(t *testing.T, sqlxDB *sqlx.DB) (interfaces.AuthUserRepo, 
 func SetUpClientRepo(t *testing.T, sqlxDB *sqlx.DB) (interfaces.ClientRepo, []*resources.Client) {
 	t.Helper()
 	clientRepo := pgClientRepo{db: sqlxDB}
-	clients := []*resources.Client{
-		resources.NewClient("qualtrics.com"),
-		resources.NewClient("telnyx.com"),
-		resources.NewClient("spothero.com"),
-	}
+	clients := []*resources.Client{}
 
 	for _, client := range clients {
 		_, err := clientRepo.Create(client)
