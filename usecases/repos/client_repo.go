@@ -1,9 +1,9 @@
-package interfaces
+package repos
 
 import (
-	"golang-auth/usecases/resources"
-
 	"github.com/google/uuid"
+
+	"golang-auth/usecases/resources"
 )
 
 type ClientRepo interface {

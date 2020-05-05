@@ -3,6 +3,8 @@ package db
 import (
 	"database/sql"
 	"fmt"
+
+	"log"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -15,72 +17,59 @@ import (
 	"github.com/pressly/goose"
 
 	"golang-auth/infrastructure/crypto"
-	"golang-auth/usecases/interfaces"
+	"golang-auth/usecases/repos"
 	"golang-auth/usecases/resources"
 )
 
 var testDBName = "golang_auth_test"
 
-func SetUpDB(t *testing.T) *sqlx.DB {
+func SetUpDB(t *testing.T) (*sqlx.DB, func(t *testing.T, sqlxDB *sqlx.DB)) {
 	t.Helper()
 	pgConfig := NewDefaultPostgresConfig(testDBName)
-	migrateDown(t, pgConfig)
-	migrateUp(t, pgConfig)
-	sqlxDb := MustConnect(pgConfig)
-	return sqlxDb
-}
-
-func TearDownDB(t *testing.T) {
-	t.Helper()
-	pgConfig := NewDefaultPostgresConfig(testDBName)
-	migrateDown(t, pgConfig)
-}
-
-func migrateUp(t *testing.T, pgConfig PostgresConfig) {
-	t.Helper()
-
 	pgURL := BuildConnectionString(pgConfig)
 
-	_, dbTestFixturesPath, _, _ := runtime.Caller(1)
-	dbPath := filepath.Dir(dbTestFixturesPath)
-	migrationsPath := fmt.Sprintf("/%s/migrations", dbPath)
-
+	fmt.Print("\nOpening DB...\n\n")
 	db, err := sql.Open("postgres", pgURL)
 	if err != nil {
 		panic(err)
 	}
 
-	err = goose.Up(db, migrationsPath)
+	migrateUp(t, db)
+
+	sqlxDB := sqlx.NewDb(db, "postgres")
+	return sqlxDB, CloseDB
+}
+
+func CloseDB(t *testing.T, sqlxDB *sqlx.DB) {
+	t.Helper()
+	fmt.Print("\nClosing DB...\n\n")
+	err := sqlxDB.Close()
+	if err != nil {
+		log.Print(err)
+	}
+}
+
+func migrateUp(t *testing.T, db *sql.DB) {
+	t.Helper()
+
+	_, dbTestFixturesPath, _, _ := runtime.Caller(1)
+	dbPath := filepath.Dir(dbTestFixturesPath)
+	migrationsPath := fmt.Sprintf("/%s/migrations", dbPath)
+
+	err := goose.Up(db, migrationsPath)
 	if err != nil && err != goose.ErrNoNextVersion {
 		panic(err)
 	}
 }
 
-func migrateDown(t *testing.T, pgConfig PostgresConfig) {
+func SetUpAuthUserRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthUserRepo, []*resources.AuthUser) {
 	t.Helper()
-	pgURL := BuildConnectionString(pgConfig)
 
-	_, dbTestFixturesPath, _, _ := runtime.Caller(1)
-	dbPath := filepath.Dir(dbTestFixturesPath)
-	migrationsPath := fmt.Sprintf("/%s/migrations", dbPath)
-
-	db, err := sql.Open("postgres", pgURL)
-	if err != nil {
-		panic(err)
-	}
-
-	err = goose.Reset(db, migrationsPath)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func SetUpAuthUserRepo(t *testing.T, sqlxDB *sqlx.DB) (interfaces.AuthUserRepo, []*resources.AuthUser) {
-	t.Helper()
+	sqlxDB.MustExec(`TRUNCATE TABLE auth_user CASCADE;`)
 
 	authUserRepo := pgAuthUserRepo{
-		db:         sqlxDB,
-		passHasher: crypto.NewDefaultArgon2PassHasher(),
+		db:     sqlxDB,
+		hasher: crypto.NewDefaultArgon2PassHasher(),
 	}
 	users := []*resources.AuthUser{
 		resources.NewAuthUser("domtoretto", "americanmuscle@fastnfurious.com"),
@@ -95,10 +84,14 @@ func SetUpAuthUserRepo(t *testing.T, sqlxDB *sqlx.DB) (interfaces.AuthUserRepo, 
 		}
 	}
 	return &authUserRepo, users
+
 }
 
-func SetUpClientRepo(t *testing.T, sqlxDB *sqlx.DB) (interfaces.ClientRepo, []*resources.Client) {
+func SetUpClientRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.ClientRepo, []*resources.Client) {
 	t.Helper()
+
+	sqlxDB.MustExec(`TRUNCATE TABLE client CASCADE;`)
+
 	clientRepo := pgClientRepo{db: sqlxDB}
 	clients := []*resources.Client{}
 

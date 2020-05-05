@@ -4,18 +4,19 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 
 	"golang-auth/infrastructure/db"
 )
 
-func setupTestClientHandler(t *testing.T) *mux.Router {
-	sqlxDB := db.SetUpDB(t)
+func setupTestClientHandler(t *testing.T, sqlxDB *sqlx.DB) *mux.Router {
 	clientRepo, _ := db.SetUpClientRepo(t, sqlxDB)
 	clientHandler := ClientHandler{repo: clientRepo}
 
@@ -23,11 +24,15 @@ func setupTestClientHandler(t *testing.T) *mux.Router {
 	router.HandleFunc("/client/", clientHandler.Create).Methods("POST")
 
 	return router
+
 }
 
 func TestClientHandler_POSTClient(t *testing.T) {
 	assertions := assert.New(t)
-	clientHandler := setupTestClientHandler(t)
+
+	sqlxDB, closeDB := db.SetUpDB(t)
+	defer closeDB(t, sqlxDB)
+	clientHandler := setupTestClientHandler(t, sqlxDB)
 
 	t.Run("POST new client - success", func(t *testing.T) {
 		response := httptest.NewRecorder()

@@ -2,10 +2,11 @@ package server
 
 import (
 	"encoding/json"
-	"github.com/google/uuid"
 	"net/http"
 
-	"golang-auth/usecases/interfaces"
+	"github.com/google/uuid"
+
+	"golang-auth/usecases/repos"
 	"golang-auth/usecases/resources"
 )
 
@@ -31,10 +32,10 @@ func responseClientFromResource(resource *resources.Client) httpResponseClient {
 }
 
 type ClientHandler struct {
-	repo interfaces.ClientRepo
+	repo repos.ClientRepo
 }
 
-func NewClientHandler(repo interfaces.ClientRepo) *ClientHandler {
+func NewClientHandler(repo repos.ClientRepo) *ClientHandler {
 	return &ClientHandler{repo: repo}
 }
 

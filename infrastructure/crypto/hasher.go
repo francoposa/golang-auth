@@ -10,15 +10,15 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
-type Argon2PassHasher struct {
+type Argon2Hasher struct {
 	config Argon2Config
 }
 
-func NewDefaultArgon2PassHasher() Argon2PassHasher {
-	return Argon2PassHasher{config: NewDefaultArgon2Config()}
+func NewDefaultArgon2PassHasher() Argon2Hasher {
+	return Argon2Hasher{config: NewDefaultArgon2Config()}
 }
 
-func (a Argon2PassHasher) Hash(password string) (string, error) {
+func (a Argon2Hasher) Hash(password string) (string, error) {
 	salt, err := generateRandomSalt(a.config.saltLength)
 	if err != nil {
 		return "", err
@@ -52,7 +52,7 @@ func (a Argon2PassHasher) Hash(password string) (string, error) {
 }
 
 // Verify checks a candidate password against a known hash using the argon2 hashing algorithm
-func (a Argon2PassHasher) Verify(password, hash string) (bool, error) {
+func (a Argon2Hasher) Verify(password, hash string) (bool, error) {
 	// hash is our known argon2 hash in the standard encoded representation
 	knownEncodedHashParts := strings.Split(hash, "$")
 

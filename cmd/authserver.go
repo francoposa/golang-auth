@@ -27,12 +27,12 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		passHasher := crypto.NewDefaultArgon2PassHasher()
+		hasher := crypto.NewDefaultArgon2PassHasher()
 
 		pgConfig := db.NewDefaultPostgresConfig("golang_auth")
 		sqlxDB := db.MustConnect(pgConfig)
 
-		authUserRepo := db.NewPGAuthUserRepo(sqlxDB, passHasher)
+		authUserRepo := db.NewPGAuthUserRepo(sqlxDB, hasher)
 		authUserHandler := server.NewAuthUserHandler(authUserRepo)
 
 		clientRepo := db.NewPGClientRepo(sqlxDB)

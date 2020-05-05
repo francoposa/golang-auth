@@ -11,7 +11,8 @@ import (
 func TestPGClientRepo(t *testing.T) {
 	assertions := assert.New(t)
 
-	sqlxDB := SetUpDB(t)
+	sqlxDB, closeDB := SetUpDB(t)
+	defer closeDB(t, sqlxDB)
 	clientRepo, _ := SetUpClientRepo(t, sqlxDB)
 
 	publicClient, err := resources.NewClient("telnyx.com", true)

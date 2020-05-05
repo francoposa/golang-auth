@@ -5,13 +5,15 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"golang-auth/usecases/repos"
 	"golang-auth/usecases/resources"
 )
 
 func TestPGAuthUserRepo(t *testing.T) {
 	assertions := assert.New(t)
 
-	sqlxDB := SetUpDB(t)
+	sqlxDB, closeDB := SetUpDB(t)
+	defer closeDB(t, sqlxDB)
 	authUserRepo, _ := SetUpAuthUserRepo(t, sqlxDB)
 
 	authUser := resources.NewAuthUser("suki", "pink2000@honda.com")
@@ -21,12 +23,24 @@ func TestPGAuthUserRepo(t *testing.T) {
 		assertAuthUser(assertions, authUser, createdAuthUser)
 	})
 
+	t.Run("create already existing user - error", func(t *testing.T) {
+		alreadyCreatedAuthUser, err := authUserRepo.Create(authUser, "suki_pass")
+		assertions.Nil(alreadyCreatedAuthUser, "expected nil struct, got: %q", alreadyCreatedAuthUser)
+		assertions.IsType(&repos.DuplicateAuthUserForUsernameError{}, err, "expected err, got nil")
+	})
+
 	t.Run("get auth user", func(t *testing.T) {
 		retrievedAuthUser, err := authUserRepo.Get(authUser.Username)
 		if err != nil {
 			t.Error(err)
 		}
 		assertAuthUser(assertions, authUser, retrievedAuthUser)
+	})
+
+	t.Run("get nonexistent auth user - error", func(t *testing.T) {
+		nonexistentAuthUser, err := authUserRepo.Get("xxx")
+		assertions.Nil(nonexistentAuthUser, "expected nil struct, got: %q", nonexistentAuthUser)
+		assertions.IsType(&repos.AuthUserNotFoundForUsernameError{}, err, "expected err, got nil")
 	})
 
 	t.Run("verify auth user password", func(t *testing.T) {

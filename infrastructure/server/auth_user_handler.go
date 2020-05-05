@@ -2,7 +2,8 @@ package server
 
 import (
 	"encoding/json"
-	"golang-auth/usecases/interfaces"
+	"golang-auth/usecases/repos"
+	"log"
 	"net/http"
 )
 
@@ -12,10 +13,10 @@ type httpUserAuthentication struct {
 }
 
 type AuthUserHandler struct {
-	repo interfaces.AuthUserRepo
+	repo repos.AuthUserRepo
 }
 
-func NewAuthUserHandler(repo interfaces.AuthUserRepo) *AuthUserHandler {
+func NewAuthUserHandler(repo repos.AuthUserRepo) *AuthUserHandler {
 	return &AuthUserHandler{repo: repo}
 }
 
@@ -29,6 +30,7 @@ func (h *AuthUserHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
 
 	verified, err := h.repo.Verify(postedUserAuth.Username, postedUserAuth.Password)
 	if err != nil {
+		log.Print(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

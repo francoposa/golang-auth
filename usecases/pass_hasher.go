@@ -1,6 +1,6 @@
-package interfaces
+package usecases
 
-type PassHasher interface {
+type Hasher interface {
 	Hash(password string) (string, error)
 	Verify(password, hash string) (bool, error)
 }

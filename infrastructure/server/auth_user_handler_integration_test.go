@@ -9,25 +9,27 @@ import (
 	"testing"
 
 	"github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 
 	"golang-auth/infrastructure/db"
 )
 
-func setupTestAuthUserHandler(t *testing.T) *mux.Router {
-	sqlxDB := db.SetUpDB(t)
+func setupTestAuthUserHandler(t *testing.T, sqlxDB *sqlx.DB) *mux.Router {
 	authUserRepo, _ := db.SetUpAuthUserRepo(t, sqlxDB)
 	authUserHandler := AuthUserHandler{repo: authUserRepo}
 
 	router := mux.NewRouter()
-	router.HandleFunc("/user/authenticate/", authUserHandler.Authenticate).Methods("POST")
+	router.HandleFunc("/login", authUserHandler.Authenticate).Methods("POST")
 
 	return router
 }
 
 func TestAuthUserHandler_Authenticate(t *testing.T) {
 	assertions := assert.New(t)
-	authUserHandler := setupTestAuthUserHandler(t)
+	sqlxDB, closeDB := db.SetUpDB(t)
+	defer closeDB(t, sqlxDB)
+	authUserHandler := setupTestAuthUserHandler(t, sqlxDB)
 
 	t.Run("HTTP 200 for correct username and password", func(t *testing.T) {
 		response := httptest.NewRecorder()
@@ -55,6 +57,6 @@ func TestAuthUserHandler_Authenticate(t *testing.T) {
 func newPOSTUserAuthenticateRequest(t *testing.T, body map[string]string) *http.Request {
 	t.Helper()
 	jsonBody, _ := json.Marshal(body)
-	req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/user/authenticate/"), bytes.NewBuffer(jsonBody))
+	req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/login"), bytes.NewBuffer(jsonBody))
 	return req
 }
