@@ -51,7 +51,7 @@ func migrateUp(t *testing.T, pgConfig PostgresConfig) {
 	}
 
 	err = goose.Up(db, migrationsPath)
-	if err != nil && err == goose.ErrNoNextVersion {
+	if err != nil && err != goose.ErrNoNextVersion {
 		panic(err)
 	}
 }
