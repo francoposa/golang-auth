@@ -15,20 +15,18 @@ import (
 	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/jmoiron/sqlx"
 	"github.com/pressly/goose"
-
-	"golang-auth/infrastructure/crypto"
-	"golang-auth/usecases/repos"
-	"golang-auth/usecases/resources"
 )
 
 var testDBName = "golang_auth_test"
+
+var tables = []string{"auth_user", "client"}
 
 func SetUpDB(t *testing.T) (*sqlx.DB, func(t *testing.T, sqlxDB *sqlx.DB)) {
 	t.Helper()
 	pgConfig := NewDefaultPostgresConfig(testDBName)
 	pgURL := BuildConnectionString(pgConfig)
 
-	fmt.Print("\nOpening DB...\n\n")
+	fmt.Print("\nOpening db...\n")
 	db, err := sql.Open("postgres", pgURL)
 	if err != nil {
 		panic(err)
@@ -37,12 +35,44 @@ func SetUpDB(t *testing.T) (*sqlx.DB, func(t *testing.T, sqlxDB *sqlx.DB)) {
 	migrateUp(t, db)
 
 	sqlxDB := sqlx.NewDb(db, "postgres")
-	return sqlxDB, CloseDB
+
+	fmt.Print("\nTruncating tables for setup...\n\n")
+	for _, table := range tables {
+		statement := fmt.Sprintf(`TRUNCATE TABLE %s CASCADE`, table)
+		result, err := sqlxDB.Queryx(statement)
+		if err != nil {
+			panic(err)
+		}
+		query := fmt.Sprintf(`SELECT COUNT(*) FROM %s CASCADE`, table)
+		result, err = sqlxDB.Queryx(query)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(result)
+	}
+
+	return sqlxDB, TearDownDB
 }
 
-func CloseDB(t *testing.T, sqlxDB *sqlx.DB) {
+func TearDownDB(t *testing.T, sqlxDB *sqlx.DB) {
 	t.Helper()
-	fmt.Print("\nClosing DB...\n\n")
+
+	fmt.Print("\nTruncating tables for teardown...\n")
+	for _, table := range tables {
+		statement := fmt.Sprintf(`TRUNCATE TABLE %s CASCADE`, table)
+		result, err := sqlxDB.Queryx(statement)
+		if err != nil {
+			panic(err)
+		}
+		query := fmt.Sprintf(`SELECT COUNT(*) FROM %s CASCADE`, table)
+		result, err = sqlxDB.Queryx(query)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(result)
+	}
+
+	fmt.Print("\nClosing db...\n")
 	err := sqlxDB.Close()
 	if err != nil {
 		log.Print(err)
@@ -60,46 +90,4 @@ func migrateUp(t *testing.T, db *sql.DB) {
 	if err != nil && err != goose.ErrNoNextVersion {
 		panic(err)
 	}
-}
-
-func SetUpAuthUserRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthUserRepo, []*resources.AuthUser) {
-	t.Helper()
-
-	sqlxDB.MustExec(`TRUNCATE TABLE auth_user CASCADE;`)
-
-	authUserRepo := pgAuthUserRepo{
-		db:     sqlxDB,
-		hasher: crypto.NewDefaultArgon2PassHasher(),
-	}
-	users := []*resources.AuthUser{
-		resources.NewAuthUser("domtoretto", "americanmuscle@fastnfurious.com"),
-		resources.NewAuthUser("brian", "importtuners@fastnfurious.com"),
-		resources.NewAuthUser("roman", "ejectoseat@fastnfurious.com"),
-	}
-
-	for _, user := range users {
-		_, err := authUserRepo.Create(user, fmt.Sprintf("%s_pass", user.Username))
-		if err != nil {
-			panic(err)
-		}
-	}
-	return &authUserRepo, users
-
-}
-
-func SetUpClientRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.ClientRepo, []*resources.Client) {
-	t.Helper()
-
-	sqlxDB.MustExec(`TRUNCATE TABLE client CASCADE;`)
-
-	clientRepo := pgClientRepo{db: sqlxDB}
-	clients := []*resources.Client{}
-
-	for _, client := range clients {
-		_, err := clientRepo.Create(client)
-		if err != nil {
-			panic(err)
-		}
-	}
-	return &clientRepo, clients
 }

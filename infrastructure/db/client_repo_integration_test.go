@@ -13,7 +13,7 @@ func TestPGClientRepo(t *testing.T) {
 
 	sqlxDB, closeDB := SetUpDB(t)
 	defer closeDB(t, sqlxDB)
-	clientRepo, _ := SetUpClientRepo(t, sqlxDB)
+	clientRepo := NewPGClientRepo(sqlxDB)
 
 	publicClient, err := resources.NewClient("telnyx.com", true)
 	if err != nil {
