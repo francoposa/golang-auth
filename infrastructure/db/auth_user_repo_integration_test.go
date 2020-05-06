@@ -1,13 +1,10 @@
 package db
 
 import (
-	"fmt"
-
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"golang-auth/infrastructure/crypto"
 	"golang-auth/usecases/repos"
 	"golang-auth/usecases/resources"
 )
@@ -17,17 +14,7 @@ func TestPGAuthUserRepo(t *testing.T) {
 
 	sqlxDB, closeDB := SetUpDB(t)
 	defer closeDB(t, sqlxDB)
-	authUserRepo := NewPGAuthUserRepo(sqlxDB, crypto.NewDefaultArgon2PassHasher())
-
-	users := []*resources.AuthUser{
-		resources.NewAuthUser("domtoretto", "americanmuscle@fastnfurious.com"),
-		resources.NewAuthUser("brian", "importtuners@fastnfurious.com"),
-		resources.NewAuthUser("roman", "ejectoseat@fastnfurious.com"),
-	}
-
-	for _, user := range users {
-		authUserRepo.Create(user, fmt.Sprintf("%s_pass", user.Username))
-	}
+	authUserRepo, _ := SetUpAuthUserRepo(t, sqlxDB)
 
 	authUser := resources.NewAuthUser("suki", "pink2000@honda.com")
 

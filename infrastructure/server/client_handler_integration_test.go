@@ -18,7 +18,7 @@ import (
 
 func setupTestClientHandler(t *testing.T, sqlxDB *sqlx.DB) *mux.Router {
 	t.Helper()
-	clientRepo := db.NewPGClientRepo(sqlxDB)
+	clientRepo, _ := db.SetUpClientRepo(t, sqlxDB)
 	clientHandler := ClientHandler{repo: clientRepo}
 
 	router := mux.NewRouter()

@@ -48,7 +48,7 @@ func NewClient(redirectURI string, public bool) (*Client, error) {
 
 	// We will not issue public clients (as defined in RFC 5749 Section 2.1 - Client Types)
 	// a secret. Denying public clients a secret is not specifically required by
-	// the RFC, but not issuing a secret is a good way to avoid leaking the secret
+	// the RFC, but not issuing a secret is a good way to avoid leaking one
 	var secret *uuid.UUID
 	if public {
 		secret = nil

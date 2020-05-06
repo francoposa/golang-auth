@@ -12,26 +12,13 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 
-	"golang-auth/infrastructure/crypto"
 	"golang-auth/infrastructure/db"
-	"golang-auth/usecases/resources"
 )
 
 func setupTestAuthUserHandler(t *testing.T, sqlxDB *sqlx.DB) *mux.Router {
 	t.Helper()
 
-	authUserRepo := db.NewPGAuthUserRepo(sqlxDB, crypto.NewDefaultArgon2PassHasher())
-
-	users := []*resources.AuthUser{
-		resources.NewAuthUser("domtoretto", "americanmuscle@fastnfurious.com"),
-		resources.NewAuthUser("brian", "importtuners@fastnfurious.com"),
-		resources.NewAuthUser("roman", "ejectoseat@fastnfurious.com"),
-	}
-
-	for _, user := range users {
-		authUserRepo.Create(user, fmt.Sprintf("%s_pass", user.Username))
-	}
-
+	authUserRepo, _ := db.SetUpAuthUserRepo(t, sqlxDB)
 	authUserHandler := AuthUserHandler{repo: authUserRepo}
 
 	router := mux.NewRouter()

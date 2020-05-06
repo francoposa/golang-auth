@@ -3,11 +3,12 @@ package db
 import (
 	"database/sql"
 	"fmt"
-
 	"log"
+	"math/rand"
 	"path/filepath"
 	"runtime"
 	"testing"
+	"time"
 
 	// Makes postgres driver available to the migrate package
 	_ "github.com/golang-migrate/migrate/database/postgres"
@@ -15,65 +16,83 @@ import (
 	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/jmoiron/sqlx"
 	"github.com/pressly/goose"
+
+	"golang-auth/infrastructure/crypto"
+	"golang-auth/usecases/repos"
+	"golang-auth/usecases/resources"
 )
 
-var testDBName = "golang_auth_test"
-
-var tables = []string{"auth_user", "client"}
+var testDBNameTemplate = `golang_auth_test_%d`
+var createDBStatementTemplate = `CREATE DATABASE %s`
+var dropDBStatementTemplate = `DROP DATABASE %s`
 
 func SetUpDB(t *testing.T) (*sqlx.DB, func(t *testing.T, sqlxDB *sqlx.DB)) {
 	t.Helper()
-	pgConfig := NewDefaultPostgresConfig(testDBName)
-	pgURL := BuildConnectionString(pgConfig)
 
-	fmt.Print("\nOpening db...\n")
-	db, err := sql.Open("postgres", pgURL)
+	// Connect to Postgres with user that can create DBs
+	pgSuperUserConfig := NewDefaultPostgresConfig("postgres")
+	superUserSqlxDB := MustConnect(pgSuperUserConfig)
+
+	// Create random database name to avoid collisions in parallel tests
+	rand.Seed(time.Now().UnixNano())
+	testDBName := fmt.Sprintf(testDBNameTemplate, rand.Int())
+	fmt.Printf("\nCreating test DB %s...\n", testDBName)
+
+	createDBStatement := fmt.Sprintf(createDBStatementTemplate, testDBName)
+	superUserSqlxDB.MustExec(createDBStatement)
+
+	// Done with the Postgres superuser - close connection
+	err := superUserSqlxDB.Close()
+	if err != nil {
+		log.Print(err)
+	}
+
+	// Connect to test DB with Golang sql db package, as Goose migrations don't work with sqlx.DB
+	pgTestDBConfig := NewDefaultPostgresConfig(testDBName)
+	pgTestDBURL := BuildConnectionString(pgTestDBConfig)
+
+	fmt.Printf("\nOpening test DB %s...\n", testDBName)
+	testDB, err := sql.Open("postgres", pgTestDBURL)
 	if err != nil {
 		panic(err)
 	}
 
-	migrateUp(t, db)
+	// Goose migration
+	migrateUp(t, testDB)
 
-	sqlxDB := sqlx.NewDb(db, "postgres")
+	// Wrap existing test DB connection into sqlx.DB
+	sqlxTestDB := sqlx.NewDb(testDB, "postgres")
 
-	fmt.Print("\nTruncating tables for setup...\n\n")
-	for _, table := range tables {
-		statement := fmt.Sprintf(`TRUNCATE TABLE %s CASCADE`, table)
-		result, err := sqlxDB.Queryx(statement)
-		if err != nil {
-			panic(err)
-		}
-		query := fmt.Sprintf(`SELECT COUNT(*) FROM %s CASCADE`, table)
-		result, err = sqlxDB.Queryx(query)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println(result)
-	}
-
-	return sqlxDB, TearDownDB
+	return sqlxTestDB, TearDownDB
 }
 
 func TearDownDB(t *testing.T, sqlxDB *sqlx.DB) {
 	t.Helper()
 
-	fmt.Print("\nTruncating tables for teardown...\n")
-	for _, table := range tables {
-		statement := fmt.Sprintf(`TRUNCATE TABLE %s CASCADE`, table)
-		result, err := sqlxDB.Queryx(statement)
-		if err != nil {
-			panic(err)
-		}
-		query := fmt.Sprintf(`SELECT COUNT(*) FROM %s CASCADE`, table)
-		result, err = sqlxDB.Queryx(query)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println(result)
+	// Extract test DB Name
+	var testDBName string
+	row := sqlxDB.QueryRowx(`SELECT current_catalog;`)
+	err := row.Scan(&testDBName)
+	if err != nil {
+		panic(err)
 	}
 
-	fmt.Print("\nClosing db...\n")
-	err := sqlxDB.Close()
+	fmt.Printf("\nClosing test DB %s...\n", testDBName)
+	err = sqlxDB.Close()
+	if err != nil {
+		log.Print(err)
+	}
+
+	// Connect to Postgres with user that can drop DBs
+	pgSuperUserConfig := NewDefaultPostgresConfig("postgres")
+	superUserSqlxDB := MustConnect(pgSuperUserConfig)
+
+	fmt.Printf("\nDropping test DB %s...\n", testDBName)
+	createDBStatement := fmt.Sprintf(dropDBStatementTemplate, testDBName)
+	superUserSqlxDB.MustExec(createDBStatement)
+
+	// Done with the Postgres superuser - close connection
+	err = superUserSqlxDB.Close()
 	if err != nil {
 		log.Print(err)
 	}
@@ -90,4 +109,41 @@ func migrateUp(t *testing.T, db *sql.DB) {
 	if err != nil && err != goose.ErrNoNextVersion {
 		panic(err)
 	}
+}
+
+func SetUpAuthUserRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthUserRepo, []*resources.AuthUser) {
+	t.Helper()
+
+	authUserRepo := pgAuthUserRepo{
+		db:     sqlxDB,
+		hasher: crypto.NewDefaultArgon2PassHasher(),
+	}
+	users := []*resources.AuthUser{
+		resources.NewAuthUser("domtoretto", "americanmuscle@fastnfurious.com"),
+		resources.NewAuthUser("brian", "importtuners@fastnfurious.com"),
+		resources.NewAuthUser("roman", "ejectoseat@fastnfurious.com"),
+	}
+
+	for _, user := range users {
+		_, err := authUserRepo.Create(user, fmt.Sprintf("%s_pass", user.Username))
+		if err != nil {
+			panic(err)
+		}
+	}
+	return &authUserRepo, users
+}
+
+func SetUpClientRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.ClientRepo, []*resources.Client) {
+	t.Helper()
+
+	clientRepo := pgClientRepo{db: sqlxDB}
+	clients := []*resources.Client{}
+
+	for _, client := range clients {
+		_, err := clientRepo.Create(client)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return &clientRepo, clients
 }
