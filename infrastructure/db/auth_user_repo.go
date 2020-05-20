@@ -68,7 +68,8 @@ func (r *pgAuthUserRepo) Create(user *resources.AuthUser, password string) (*res
 }
 
 var selectAuthUserByUsernameStatement = `
-SELECT * FROM auth_user WHERE username=$1
+SELECT * FROM auth_user
+WHERE username=$1
 `
 
 func (r *pgAuthUserRepo) Get(username string) (*resources.AuthUser, error) {

@@ -29,7 +29,7 @@ to quickly create a Cobra application.`,
 
 		hasher := crypto.NewDefaultArgon2PassHasher()
 
-		pgConfig := db.NewDefaultPostgresConfig("golang_auth")
+		pgConfig := db.NewDefaultPostgresConfig("examplecom_auth")
 		sqlxDB := db.MustConnect(pgConfig)
 
 		authUserRepo := db.NewPGAuthUserRepo(sqlxDB, hasher)

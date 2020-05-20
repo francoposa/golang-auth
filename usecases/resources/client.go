@@ -13,7 +13,7 @@ func (e *ClientRequiresRedirectURIError) Error() string {
 
 // Client represents an authorization client as defined in RFC 6749 Section 1.1 - Roles
 type Client struct {
-	ID          *uuid.UUID
+	ID          uuid.UUID
 	Secret      *uuid.UUID
 	RedirectURI *url.URL
 	Public      bool
@@ -58,5 +58,5 @@ func NewClient(redirectURI string, public bool) (*Client, error) {
 	}
 
 	id := uuid.New()
-	return &Client{ID: &id, Secret: secret, RedirectURI: uri, Public: public}, nil
+	return &Client{ID: id, Secret: secret, RedirectURI: uri, Public: public}, nil
 }

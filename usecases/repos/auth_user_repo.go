@@ -17,7 +17,7 @@ type AuthUserNotFoundForUsernameError struct {
 }
 
 func (e *AuthUserNotFoundForUsernameError) Error() string {
-	return fmt.Sprintf("No AuthUser found for username %s", e.Username)
+	return fmt.Sprintf("No AuthUser found with username %s", e.Username)
 }
 
 type DuplicateAuthUserForUsernameError struct {
@@ -25,5 +25,5 @@ type DuplicateAuthUserForUsernameError struct {
 }
 
 func (e *DuplicateAuthUserForUsernameError) Error() string {
-	return fmt.Sprintf("AuthUser already exists for username %s", e.Username)
+	return fmt.Sprintf("AuthUser already exists with username %s", e.Username)
 }

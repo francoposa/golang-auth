@@ -1,9 +1,7 @@
 package resources
 
 import (
-	"errors"
-	"fmt"
-	"strings"
+	"github.com/google/uuid"
 )
 
 //// OpenID Connect Scope as defined in OIDC Core Section 5.4 - Requesting Claims using Scope Values
@@ -35,7 +33,7 @@ import (
 //}
 
 // AuthUserRole is the role a user is assigned within ExampleCom's system
-// AuthUserRole disambiguates the applicable scope of ResourceOperationScope
+// AuthUserRole disambiguates the applicable scope of ResourceVerbScope
 // where an AuthUserRole of "admin" gives permission for all resources in the system
 // while an AuthUserRole of "user" limits permission for only the resources owned by the given user
 type AuthUserRole string
@@ -60,17 +58,17 @@ func (e *InvalidAuthUserRoleError) Error() string {
 	return "Invalid ExampleCom Auth User Role"
 }
 
-type ResourceOperation string
+type ResourceVerb string
 
 const (
-	Create ResourceOperation = "create"
-	Read   ResourceOperation = "read"
-	Update ResourceOperation = "update"
-	Delete ResourceOperation = "delete"
+	Create ResourceVerb = "create"
+	Read   ResourceVerb = "read"
+	Update ResourceVerb = "update"
+	Delete ResourceVerb = "delete"
 )
 
-func (op ResourceOperation) IsValid() bool {
-	switch op {
+func (v ResourceVerb) IsValid() bool {
+	switch v {
 	case Create, Read, Update, Delete:
 		return true
 	}
@@ -83,69 +81,46 @@ func (e *InvalidResourceOperationError) Error() string {
 	return "Invalid ExampleCom Resource Operation"
 }
 
-// Resource is an ExampleCom resource which may be operated upon by a Client on behalf of the Resource Owner
-type Resource string
-
-// Valid Resources in the ExampleCom system today
-const (
-	UserResource        Resource = "user"
-	UserAccountResource Resource = "user.account"
-	UserProfileResource Resource = "user.profile"
-)
-
-func (res Resource) IsValid() bool {
-	switch res {
-	case UserResource, UserAccountResource, UserProfileResource:
-		return true
-	}
-	return false
+type ResourceVerbScope struct {
+	ID       uuid.UUID
+	Role     AuthUserRole
+	Verb     ResourceVerb
+	Resource Resource
 }
 
-type InvalidResourceError struct {
-	msg string
+func NewResourceVerbScope(role AuthUserRole, verb ResourceVerb, resource Resource) *ResourceVerbScope {
+	id := uuid.New()
+	return &ResourceVerbScope{
+		ID:       id,
+		Role:     role,
+		Verb:     verb,
+		Resource: resource,
+	}
 }
 
-const invalidResourceErrorMsgPrefix string = "Invalid ExampleCom Resource"
-
-func (e *InvalidResourceError) Error() string {
-	if e.msg != "" {
-		return fmt.Sprintf("%s: %s", invalidResourceErrorMsgPrefix, e.msg)
-	}
-	return invalidResourceErrorMsgPrefix
-}
-
-type ResourceOperationScope struct {
-	Role      AuthUserRole
-	Operation ResourceOperation
-	Resource  Resource
-}
-
-func ParseResourceOperationScope(s string) (*ResourceOperationScope, error) {
-	parts := strings.Split(s, ":")
-	if len(parts) != 3 {
-		return nil, errors.New(
-			"Invalid Resource Operation Scope string. Must be in format `role:operation:resource`",
-		)
-	}
-
-	var role = AuthUserRole(parts[0])
-	if !role.IsValid() {
-		return nil, &InvalidAuthUserRoleError{}
-	}
-
-	var operation = ResourceOperation(parts[0])
-	if !operation.IsValid() {
-		return nil, &InvalidResourceOperationError{}
-	}
-
-	var resource = Resource(parts[2])
-	if !resource.IsValid() {
-		return nil, &InvalidResourceError{}
-	}
-
-	return &ResourceOperationScope{
-		Role:      role,
-		Operation: operation,
-		Resource:  resource,
-	}, nil
-}
+//
+//func ParseResourceVerbScope(s string) (*ResourceVerbScope, error) {
+//	parts := strings.Split(s, ":")
+//	if len(parts) != 3 {
+//		return nil, errors.New(
+//			"Invalid Resource Verb Scope string. Must be in format `role:verb:resource`",
+//		)
+//	}
+//
+//	var role = AuthUserRole(parts[0])
+//	if !role.IsValid() {
+//		return nil, &InvalidAuthUserRoleError{}
+//	}
+//
+//	var verb = ResourceVerb(parts[1])
+//	if !verb.IsValid() {
+//		return nil, &InvalidResourceOperationError{}
+//	}
+//
+//	var resource = Resource(parts[2])
+//	if !resource.IsValid() {
+//		return nil, &InvalidResourceError{}
+//	}
+//
+//	return NewResourceVerbScope(role, verb, resource), nil
+//}

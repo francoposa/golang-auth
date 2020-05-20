@@ -9,7 +9,7 @@ import (
 )
 
 type pgClientModel struct {
-	ID          *uuid.UUID
+	ID          uuid.UUID
 	Secret      *uuid.UUID
 	RedirectURI string `db:"redirect_uri"`
 	Public      bool
@@ -59,7 +59,7 @@ SELECT * FROM client
 WHERE id=$1
 `
 
-func (r *pgClientRepo) Get(id *uuid.UUID) (*resources.Client, error) {
+func (r *pgClientRepo) Get(id uuid.UUID) (*resources.Client, error) {
 	var c pgClientModel
 	err := r.db.QueryRowx(selectClientByIDStatement, id).StructScan(&c)
 	if err != nil {

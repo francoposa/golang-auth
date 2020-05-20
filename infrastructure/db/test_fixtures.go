@@ -22,7 +22,7 @@ import (
 	"golang-auth/usecases/resources"
 )
 
-var testDBNameTemplate = `golang_auth_test_%d`
+var testDBNameTemplate = `examplecom_auth_test_%d`
 var createDBStatementTemplate = `CREATE DATABASE %s`
 var dropDBStatementTemplate = `DROP DATABASE %s`
 
@@ -114,10 +114,8 @@ func migrateUp(t *testing.T, db *sql.DB) {
 func SetUpAuthUserRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthUserRepo, []*resources.AuthUser) {
 	t.Helper()
 
-	authUserRepo := pgAuthUserRepo{
-		db:     sqlxDB,
-		hasher: crypto.NewDefaultArgon2PassHasher(),
-	}
+	authUserRepo := NewPGAuthUserRepo(sqlxDB, crypto.NewDefaultArgon2PassHasher())
+
 	users := []*resources.AuthUser{
 		resources.NewAuthUser("domtoretto", "americanmuscle@fastnfurious.com"),
 		resources.NewAuthUser("brian", "importtuners@fastnfurious.com"),
@@ -130,7 +128,27 @@ func SetUpAuthUserRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthUserRepo, []*re
 			panic(err)
 		}
 	}
-	return &authUserRepo, users
+	return authUserRepo, users
+}
+
+func SetUpResourceRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.ResourceRepo, []*resources.Resource) {
+	t.Helper()
+
+	resourceRepo := NewPGResourceRepo(sqlxDB)
+
+	resources := []*resources.Resource{
+		resources.NewResource("user"),
+		resources.NewResource("user.account"),
+		resources.NewResource("user.profile"),
+	}
+
+	for _, resource := range resources {
+		_, err := resourceRepo.Create(resource)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return resourceRepo, resources
 }
 
 func SetUpClientRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.ClientRepo, []*resources.Client) {

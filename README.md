@@ -14,15 +14,15 @@ $ go get -u github.com/pressly/goose/cmd/goose
 
 Create DBs
 ```
-$ psql -U postgres -c "CREATE DATABASE golang_auth;"
-$ psql -U postgres -c "CREATE DATABASE golang_auth_test;"
+$ psql -U postgres -c "CREATE DATABASE examplecom_auth;"
+$ psql -U postgres -c "CREATE DATABASE examplecom_auth_test;"
 ```
 
 
 Run migrations from project root:
 
 ```
-$ goose -dir infrastructure/db/migrations postgres "user=postgres dbname=golang_auth sslmode=disable" up
+$ goose -dir infrastructure/db/migrations postgres "user=postgres dbname=examplecom_auth sslmode=disable" up
 ```
 
 The test setup currently handles running migrations up & down migrations to start & end with an empty database.

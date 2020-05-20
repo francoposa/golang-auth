@@ -16,7 +16,7 @@ type httpPOSTRequestClient struct {
 }
 
 type httpResponseClient struct {
-	ID          *uuid.UUID
+	ID          uuid.UUID
 	Secret      *uuid.UUID
 	RedirectURI string
 	Public      bool
