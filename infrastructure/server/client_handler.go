@@ -13,6 +13,7 @@ import (
 type httpPOSTRequestClient struct {
 	RedirectURI string
 	Public      bool
+	FirstParty  bool
 }
 
 type httpResponseClient struct {
@@ -20,6 +21,7 @@ type httpResponseClient struct {
 	Secret      *uuid.UUID
 	RedirectURI string
 	Public      bool
+	FirstParty  bool
 }
 
 func responseClientFromResource(resource *resources.Client) httpResponseClient {
@@ -28,6 +30,7 @@ func responseClientFromResource(resource *resources.Client) httpResponseClient {
 		Secret:      resource.Secret,
 		RedirectURI: resource.RedirectURI.String(),
 		Public:      resource.Public,
+		FirstParty:  resource.FirstParty,
 	}
 }
 
@@ -47,7 +50,7 @@ func (h *ClientHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client, err := resources.NewClient(postedClient.RedirectURI, postedClient.Public)
+	client, err := resources.NewClient(postedClient.RedirectURI, postedClient.Public, postedClient.FirstParty)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

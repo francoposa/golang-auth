@@ -17,10 +17,11 @@ type Client struct {
 	Secret      *uuid.UUID
 	RedirectURI *url.URL
 	Public      bool
+	FirstParty  bool
 }
 
 // Create a Client consistent with RFC 6749 Section 2 - Client Registration
-func NewClient(redirectURI string, public bool) (*Client, error) {
+func NewClient(redirectURI string, public bool, firstParty bool) (*Client, error) {
 
 	// Require clients to register a Redirect URI as specified in
 	// RFC 6749 Section 3.1.2.2 - Redirection Endpoint Registration Requirements
@@ -58,5 +59,11 @@ func NewClient(redirectURI string, public bool) (*Client, error) {
 	}
 
 	id := uuid.New()
-	return &Client{ID: id, Secret: secret, RedirectURI: uri, Public: public}, nil
+	return &Client{
+		ID:          id,
+		Secret:      secret,
+		RedirectURI: uri,
+		Public:      public,
+		FirstParty:  firstParty,
+	}, nil
 }

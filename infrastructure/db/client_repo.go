@@ -13,6 +13,7 @@ type pgClientModel struct {
 	Secret      *uuid.UUID
 	RedirectURI string `db:"redirect_uri"`
 	Public      bool
+	FirstParty  bool `db:"first_party"`
 }
 
 func (model pgClientModel) toResource() *resources.Client {
@@ -22,6 +23,7 @@ func (model pgClientModel) toResource() *resources.Client {
 		Secret:      model.Secret,
 		RedirectURI: uri,
 		Public:      model.Public,
+		FirstParty:  model.FirstParty,
 	}
 }
 
@@ -34,9 +36,9 @@ func NewPGClientRepo(db *sqlx.DB) *pgClientRepo {
 }
 
 var insertClientStatement = `
-INSERT INTO client (id, secret, redirect_uri, public) 
-VALUES ($1, $2, $3, $4)
-RETURNING id, secret, redirect_uri, public
+INSERT INTO client (id, secret, redirect_uri, public, first_party) 
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, secret, redirect_uri, public, first_party
 `
 
 func (r *pgClientRepo) Create(client *resources.Client) (*resources.Client, error) {
@@ -47,6 +49,7 @@ func (r *pgClientRepo) Create(client *resources.Client) (*resources.Client, erro
 		client.Secret,
 		client.RedirectURI.String(),
 		client.Public,
+		client.FirstParty,
 	).StructScan(&c)
 	if err != nil {
 		return nil, err

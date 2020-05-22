@@ -15,11 +15,11 @@ func TestPGClientRepo(t *testing.T) {
 	defer closeDB(t, sqlxDB)
 	clientRepo, _ := SetUpClientRepo(t, sqlxDB)
 
-	publicClient, err := resources.NewClient("telnyx.com", true)
+	publicClient, err := resources.NewClient("telnyx.com", true, true)
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = resources.NewClient("spothero.com", false)
+	_, err = resources.NewClient("spothero.com", false, true)
 	if err != nil {
 		t.Error(err)
 	}
@@ -32,7 +32,7 @@ func TestPGClientRepo(t *testing.T) {
 		assertClient(assertions, publicClient, createdClient)
 	})
 
-	t.Run("get publicClient", func(t *testing.T) {
+	t.Run("get public client", func(t *testing.T) {
 		retrievedClient, err := clientRepo.Get(publicClient.ID)
 		if err != nil {
 			t.Error(err)
