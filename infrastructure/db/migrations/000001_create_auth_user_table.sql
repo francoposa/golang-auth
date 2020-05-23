@@ -1,5 +1,5 @@
 -- +goose Up
-CREATE TABLE IF NOT EXISTS auth_user
+CREATE TABLE IF NOT EXISTS authentication_user
 (
     id       TEXT NOT NULL PRIMARY KEY,
     username TEXT NOT NULL UNIQUE,
@@ -8,4 +8,4 @@ CREATE TABLE IF NOT EXISTS auth_user
 );
 
 -- +goose Down
-DROP TABLE IF EXISTS auth_user;
+DROP TABLE IF EXISTS authentication_user;

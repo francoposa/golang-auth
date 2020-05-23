@@ -34,19 +34,19 @@ import (
 //	return "Invalid OpenID Connect Scope: OIDC Core Section 5.4"
 //}
 
-// AuthUserRole is the role a user is assigned within ExampleCom's system
-// AuthUserRole disambiguates the applicable scope of ResourceOperationScope
-// where an AuthUserRole of "admin" gives permission for all resources in the system
-// while an AuthUserRole of "user" limits permission for only the resources owned by the given user
-type AuthUserRole string
+// AuthZUserRole is the role a user is assigned within ExampleCom's system
+// AuthZUserRole disambiguates the applicable scope of ResourceOperationScope
+// where an AuthZUserRole of "admin" gives permission for all resources in the system
+// while an AuthZUserRole of "user" limits permission for only the resources owned by the given user
+type AuthZUserRole string
 
-// Valid AuthUserRoles in the ExampleCom system today
+// Valid AuthNUserRoles in the ExampleCom system today
 const (
-	AdminRole AuthUserRole = "admin"
-	UserRole  AuthUserRole = "user"
+	AdminRole AuthZUserRole = "admin"
+	UserRole  AuthZUserRole = "user"
 )
 
-func (role AuthUserRole) IsValid() bool {
+func (role AuthZUserRole) IsValid() bool {
 	switch role {
 	case AdminRole, UserRole:
 		return true
@@ -54,10 +54,10 @@ func (role AuthUserRole) IsValid() bool {
 	return false
 }
 
-type InvalidAuthUserRoleError struct{}
+type InvalidAuthZUserRoleError struct{}
 
-func (e *InvalidAuthUserRoleError) Error() string {
-	return "Invalid ExampleCom Auth User AuthUserRole"
+func (e *InvalidAuthZUserRoleError) Error() string {
+	return "Invalid ExampleCom Authorization User Role"
 }
 
 type ResourceOperation string
@@ -84,21 +84,21 @@ func (e *InvalidResourceOperationError) Error() string {
 }
 
 type ResourceOperationScope struct {
-	ID           uuid.UUID
-	AuthUserRole AuthUserRole
-	Operation    ResourceOperation
-	Resource     *Resource
+	ID            uuid.UUID
+	AuthNUserRole AuthZUserRole
+	Operation     ResourceOperation
+	Resource      *Resource
 }
 
 func NewResourceOperationScope(
-	role AuthUserRole,
+	role AuthZUserRole,
 	operation ResourceOperation,
 	resource *Resource,
 ) *ResourceOperationScope {
 	id := uuid.New()
 	return &ResourceOperationScope{
 		ID:           id,
-		AuthUserRole: role,
+		AuthNUserRole: role,
 		Operation:    operation,
 		Resource:     resource,
 	}
@@ -112,9 +112,9 @@ func ParseResourceOperationScope(s string) (*ResourceOperationScope, error) {
 		)
 	}
 
-	var role = AuthUserRole(parts[0])
+	var role = AuthZUserRole(parts[0])
 	if !role.IsValid() {
-		return nil, &InvalidAuthUserRoleError{}
+		return nil, &InvalidAuthZUserRoleError{}
 	}
 
 	var verb = ResourceOperation(parts[1])

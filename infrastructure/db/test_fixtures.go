@@ -111,24 +111,24 @@ func migrateUp(t *testing.T, db *sql.DB) {
 	}
 }
 
-func SetUpAuthUserRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthUserRepo, []*resources.AuthUser) {
+func SetUpAuthNUserRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthNUserRepo, []*resources.AuthNUser) {
 	t.Helper()
 
-	authUserRepo := NewPGAuthUserRepo(sqlxDB, crypto.NewDefaultArgon2PassHasher())
+	AuthNUserRepo := NewPGAuthNUserRepo(sqlxDB, crypto.NewDefaultArgon2PassHasher())
 
-	users := []*resources.AuthUser{
-		resources.NewAuthUser("domtoretto", "americanmuscle@fastnfurious.com"),
-		resources.NewAuthUser("brian", "importtuners@fastnfurious.com"),
-		resources.NewAuthUser("roman", "ejectoseat@fastnfurious.com"),
+	users := []*resources.AuthNUser{
+		resources.NewAuthNUser("domtoretto", "americanmuscle@fastnfurious.com"),
+		resources.NewAuthNUser("brian", "importtuners@fastnfurious.com"),
+		resources.NewAuthNUser("roman", "ejectoseat@fastnfurious.com"),
 	}
 
 	for _, user := range users {
-		_, err := authUserRepo.Create(user, fmt.Sprintf("%s_pass", user.Username))
+		_, err := AuthNUserRepo.Create(user, fmt.Sprintf("%s_pass", user.Username))
 		if err != nil {
 			panic(err)
 		}
 	}
-	return authUserRepo, users
+	return AuthNUserRepo, users
 }
 
 func SetUpResourceRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.ResourceRepo, []*resources.Resource) {

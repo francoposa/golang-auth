@@ -12,15 +12,15 @@ type httpUserAuthentication struct {
 	Password string
 }
 
-type AuthUserHandler struct {
-	repo repos.AuthUserRepo
+type AuthNUserHandler struct {
+	repo repos.AuthNUserRepo
 }
 
-func NewAuthUserHandler(repo repos.AuthUserRepo) *AuthUserHandler {
-	return &AuthUserHandler{repo: repo}
+func NewAuthNUserHandler(repo repos.AuthNUserRepo) *AuthNUserHandler {
+	return &AuthNUserHandler{repo: repo}
 }
 
-func (h *AuthUserHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
+func (h *AuthNUserHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
 	postedUserAuth := httpUserAuthentication{}
 	err := json.NewDecoder(r.Body).Decode(&postedUserAuth)
 	if err != nil || postedUserAuth.Username == "" || postedUserAuth.Password == "" {

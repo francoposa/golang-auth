@@ -2,13 +2,13 @@ package resources
 
 import "github.com/google/uuid"
 
-type AuthUser struct {
+type AuthNUser struct {
 	ID       uuid.UUID
 	Username string
 	Email    string
 }
 
-func NewAuthUser(username, email string) *AuthUser {
+func NewAuthNUser(username, email string) *AuthNUser {
 	id := uuid.New()
-	return &AuthUser{ID: id, Username: username, Email: email}
+	return &AuthNUser{ID: id, Username: username, Email: email}
 }

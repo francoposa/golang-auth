@@ -12,46 +12,46 @@ import (
 	"golang-auth/usecases/resources"
 )
 
-type pgAuthUserModel struct {
+type pgAuthNUserModel struct {
 	ID       uuid.UUID
 	Username string
 	Email    string
 	Password string
 }
 
-func (model pgAuthUserModel) toResource() *resources.AuthUser {
-	return &resources.AuthUser{
+func (model pgAuthNUserModel) toResource() *resources.AuthNUser {
+	return &resources.AuthNUser{
 		ID:       model.ID,
 		Username: model.Username,
 		Email:    model.Email,
 	}
 }
 
-type pgAuthUserRepo struct {
+type pgAuthNUserRepo struct {
 	db     *sqlx.DB
 	hasher usecases.Hasher
 }
 
-func NewPGAuthUserRepo(db *sqlx.DB, hasher usecases.Hasher) *pgAuthUserRepo {
-	return &pgAuthUserRepo{db: db, hasher: hasher}
+func NewPGAuthNUserRepo(db *sqlx.DB, hasher usecases.Hasher) *pgAuthNUserRepo {
+	return &pgAuthNUserRepo{db: db, hasher: hasher}
 }
 
-var insertAuthuserStatement = `
-INSERT INTO auth_user (id, username, email, password) 
+var insertAuthNUserStatement = `
+INSERT INTO authentication_user (id, username, email, password) 
 VALUES ($1, $2, $3, $4)
 RETURNING id, username, email
 `
 
-func (r *pgAuthUserRepo) Create(user *resources.AuthUser, password string) (*resources.AuthUser, error) {
+func (r *pgAuthNUserRepo) Create(user *resources.AuthNUser, password string) (*resources.AuthNUser, error) {
 	hashedPassword, err := r.hasher.Hash(password)
 	if err != nil {
 		log.Print(err)
 		return nil, err
 	}
 
-	var au pgAuthUserModel
+	var au pgAuthNUserModel
 	err = r.db.QueryRowx(
-		insertAuthuserStatement,
+		insertAuthNUserStatement,
 		user.ID,
 		user.Username,
 		user.Email,
@@ -59,7 +59,7 @@ func (r *pgAuthUserRepo) Create(user *resources.AuthUser, password string) (*res
 	).StructScan(&au)
 	if err != nil {
 		if err, ok := err.(*pq.Error); ok && err.Code == "23505" {
-			return nil, &repos.DuplicateAuthUserForUsernameError{Username: user.Username}
+			return nil, &repos.DuplicateAuthNUserForUsernameError{Username: user.Username}
 		}
 		log.Print(err)
 		return nil, err
@@ -67,17 +67,17 @@ func (r *pgAuthUserRepo) Create(user *resources.AuthUser, password string) (*res
 	return au.toResource(), err
 }
 
-var selectAuthUserByUsernameStatement = `
-SELECT * FROM auth_user
+var selectAuthNUserByUsernameStatement = `
+SELECT * FROM authentication_user
 WHERE username=$1
 `
 
-func (r *pgAuthUserRepo) Get(username string) (*resources.AuthUser, error) {
-	var au pgAuthUserModel
-	err := r.db.QueryRowx(selectAuthUserByUsernameStatement, username).StructScan(&au)
+func (r *pgAuthNUserRepo) Get(username string) (*resources.AuthNUser, error) {
+	var au pgAuthNUserModel
+	err := r.db.QueryRowx(selectAuthNUserByUsernameStatement, username).StructScan(&au)
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
-			return nil, &repos.AuthUserNotFoundForUsernameError{Username: username}
+			return nil, &repos.AuthNUserNotFoundForUsernameError{Username: username}
 		}
 		log.Print(err)
 		return nil, err
@@ -85,12 +85,12 @@ func (r *pgAuthUserRepo) Get(username string) (*resources.AuthUser, error) {
 	return au.toResource(), nil
 }
 
-func (r *pgAuthUserRepo) Verify(username string, password string) (bool, error) {
-	var au pgAuthUserModel
-	err := r.db.QueryRowx(selectAuthUserByUsernameStatement, username).StructScan(&au)
+func (r *pgAuthNUserRepo) Verify(username string, password string) (bool, error) {
+	var au pgAuthNUserModel
+	err := r.db.QueryRowx(selectAuthNUserByUsernameStatement, username).StructScan(&au)
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
-			return false, &repos.AuthUserNotFoundForUsernameError{Username: username}
+			return false, &repos.AuthNUserNotFoundForUsernameError{Username: username}
 		}
 		log.Print(err)
 		return false, err

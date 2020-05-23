@@ -6,24 +6,24 @@ import (
 	"golang-auth/usecases/resources"
 )
 
-type AuthUserRepo interface {
-	Get(username string) (*resources.AuthUser, error)
-	Create(user *resources.AuthUser, password string) (*resources.AuthUser, error)
+type AuthNUserRepo interface {
+	Get(username string) (*resources.AuthNUser, error)
+	Create(user *resources.AuthNUser, password string) (*resources.AuthNUser, error)
 	Verify(username string, password string) (bool, error)
 }
 
-type AuthUserNotFoundForUsernameError struct {
+type AuthNUserNotFoundForUsernameError struct {
 	Username string
 }
 
-func (e *AuthUserNotFoundForUsernameError) Error() string {
-	return fmt.Sprintf("No AuthUser found with username %s", e.Username)
+func (e *AuthNUserNotFoundForUsernameError) Error() string {
+	return fmt.Sprintf("No AuthNUser found with username %s", e.Username)
 }
 
-type DuplicateAuthUserForUsernameError struct {
+type DuplicateAuthNUserForUsernameError struct {
 	Username string
 }
 
-func (e *DuplicateAuthUserForUsernameError) Error() string {
-	return fmt.Sprintf("AuthUser already exists with username %s", e.Username)
+func (e *DuplicateAuthNUserForUsernameError) Error() string {
+	return fmt.Sprintf("AuthNUser already exists with username %s", e.Username)
 }
