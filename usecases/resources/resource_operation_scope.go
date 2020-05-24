@@ -97,10 +97,10 @@ func NewResourceOperationScope(
 ) *ResourceOperationScope {
 	id := uuid.New()
 	return &ResourceOperationScope{
-		ID:           id,
+		ID:            id,
 		AuthNUserRole: role,
-		Operation:    operation,
-		Resource:     resource,
+		Operation:     operation,
+		Resource:      resource,
 	}
 }
 
