@@ -69,7 +69,7 @@ func SetUpDB(t *testing.T) (*sqlx.DB, func(t *testing.T, sqlxDB *sqlx.DB)) {
 func TearDownDB(t *testing.T, sqlxDB *sqlx.DB) {
 	t.Helper()
 
-	// Extract test DB Name
+	// Extract test DB Resource
 	var testDBName string
 	row := sqlxDB.QueryRowx(`SELECT current_catalog;`)
 	err := row.Scan(&testDBName)
@@ -114,7 +114,7 @@ func migrateUp(t *testing.T, db *sql.DB) {
 func SetUpAuthNUserRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthNUserRepo, []*resources.AuthNUser) {
 	t.Helper()
 
-	AuthNUserRepo := NewPGAuthNUserRepo(sqlxDB, crypto.NewDefaultArgon2PassHasher())
+	authNUserRepo := NewPGAuthNUserRepo(sqlxDB, crypto.NewDefaultArgon2PassHasher())
 
 	users := []*resources.AuthNUser{
 		resources.NewAuthNUser("domtoretto", "americanmuscle@fastnfurious.com"),
@@ -123,12 +123,32 @@ func SetUpAuthNUserRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthNUserRepo, []*
 	}
 
 	for _, user := range users {
-		_, err := AuthNUserRepo.Create(user, fmt.Sprintf("%s_pass", user.Username))
+		_, err := authNUserRepo.Create(user, fmt.Sprintf("%s_pass", user.Username))
 		if err != nil {
 			panic(err)
 		}
 	}
-	return AuthNUserRepo, users
+	return authNUserRepo, users
+}
+
+func SetUpAuthNRoleRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthNRoleRepo, []*resources.AuthNRole) {
+	t.Helper()
+
+	authNRoleRepo := NewPGAuthNRoleRepo(sqlxDB)
+
+	roles := []*resources.AuthNRole{
+		resources.NewAuthNRole("admin"),
+		resources.NewAuthNRole("staff"),
+		resources.NewAuthNRole("user"),
+	}
+
+	for _, role := range roles {
+		_, err := authNRoleRepo.Create(role)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return authNRoleRepo, roles
 }
 
 func SetUpResourceRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.ResourceRepo, []*resources.Resource) {

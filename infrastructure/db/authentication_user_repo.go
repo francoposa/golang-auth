@@ -32,7 +32,7 @@ type pgAuthNUserRepo struct {
 	hasher usecases.Hasher
 }
 
-func NewPGAuthNUserRepo(db *sqlx.DB, hasher usecases.Hasher) *pgAuthNUserRepo {
+func NewPGAuthNUserRepo(db *sqlx.DB, hasher usecases.Hasher) repos.AuthNUserRepo {
 	return &pgAuthNUserRepo{db: db, hasher: hasher}
 }
 

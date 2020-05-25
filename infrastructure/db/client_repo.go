@@ -1,6 +1,7 @@
 package db
 
 import (
+	"golang-auth/usecases/repos"
 	"golang-auth/usecases/resources"
 	"net/url"
 
@@ -31,7 +32,7 @@ type pgClientRepo struct {
 	db *sqlx.DB
 }
 
-func NewPGClientRepo(db *sqlx.DB) *pgClientRepo {
+func NewPGClientRepo(db *sqlx.DB) repos.ClientRepo {
 	return &pgClientRepo{db: db}
 }
 

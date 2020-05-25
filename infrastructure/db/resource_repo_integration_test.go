@@ -28,7 +28,7 @@ func TestPGResourceRepo(t *testing.T) {
 	})
 
 	t.Run("get resource", func(t *testing.T) {
-		retrievedResource, err := resourceRepo.Get(resource.Name)
+		retrievedResource, err := resourceRepo.Get(resource.Resource)
 		if err != nil {
 			t.Error(err)
 		}

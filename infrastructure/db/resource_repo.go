@@ -10,14 +10,14 @@ import (
 )
 
 type pgResourceModel struct {
-	ID   uuid.UUID
-	Name string
+	ID       uuid.UUID
+	Resource string
 }
 
 func (model pgResourceModel) toResource() *resources.Resource {
 	return &resources.Resource{
-		ID:   model.ID,
-		Name: model.Name,
+		ID:       model.ID,
+		Resource: model.Resource,
 	}
 }
 
@@ -25,14 +25,14 @@ type pgResourceRepo struct {
 	db *sqlx.DB
 }
 
-func NewPGResourceRepo(db *sqlx.DB) *pgResourceRepo {
+func NewPGResourceRepo(db *sqlx.DB) repos.ResourceRepo {
 	return &pgResourceRepo{db: db}
 }
 
 var insertResourceStatement = `
-INSERT INTO resource (id, name) 
+INSERT INTO resource (id, resource) 
 VALUES ($1, $2)
-RETURNING id, name
+RETURNING id, resource
 `
 
 func (r *pgResourceRepo) Create(resource *resources.Resource) (*resources.Resource, error) {
@@ -40,11 +40,11 @@ func (r *pgResourceRepo) Create(resource *resources.Resource) (*resources.Resour
 	err := r.db.QueryRowx(
 		insertResourceStatement,
 		resource.ID,
-		resource.Name,
+		resource.Resource,
 	).StructScan(&model)
 	if err != nil {
 		if err, ok := err.(*pq.Error); ok && err.Code == "23505" {
-			return nil, &repos.DuplicateResourceForNameError{Name: resource.Name}
+			return nil, &repos.DuplicateResourceForNameError{Name: resource.Resource}
 		}
 		log.Print(err)
 		return nil, err
@@ -54,7 +54,7 @@ func (r *pgResourceRepo) Create(resource *resources.Resource) (*resources.Resour
 
 var selectResourceByNameStatement = `
 SELECT * FROM resource
-WHERE name=$1
+WHERE resource=$1
 `
 
 func (r *pgResourceRepo) Get(name string) (*resources.Resource, error) {

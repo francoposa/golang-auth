@@ -6,7 +6,7 @@ import (
 )
 
 type ResourceRepo interface {
-	Create(client *resources.Resource) (*resources.Resource, error)
+	Create(resource *resources.Resource) (*resources.Resource, error)
 	Get(name string) (*resources.Resource, error)
 }
 
