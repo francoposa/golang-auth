@@ -138,7 +138,6 @@ func SetUpAuthNRoleRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthNRoleRepo, []*
 
 	roles := []*resources.AuthNRole{
 		resources.NewAuthNRole("admin"),
-		resources.NewAuthNRole("staff"),
 		resources.NewAuthNRole("user"),
 	}
 
