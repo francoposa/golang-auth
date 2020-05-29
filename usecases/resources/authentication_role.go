@@ -7,7 +7,7 @@ type AuthNRole struct {
 	Role string
 }
 
-func NewAuthNRole(roleName string) *AuthNRole {
+func NewAuthNRole(role string) *AuthNRole {
 	id := uuid.New()
-	return &AuthNRole{ID: id, Role: roleName}
+	return &AuthNRole{ID: id, Role: role}
 }

@@ -19,17 +19,19 @@ type pgAuthNUserModel struct {
 	Password string
 }
 
-func (model pgAuthNUserModel) toResource() *resources.AuthNUser {
+func (model pgAuthNUserModel) toResource(role resources.AuthNRole) *resources.AuthNUser {
 	return &resources.AuthNUser{
 		ID:       model.ID,
 		Username: model.Username,
 		Email:    model.Email,
+		Role:     role,
 	}
 }
 
 type pgAuthNUserRepo struct {
-	db     *sqlx.DB
-	hasher usecases.Hasher
+	db            *sqlx.DB
+	hasher        usecases.Hasher
+	authNRoleRepo repos.AuthNRoleRepo
 }
 
 func NewPGAuthNUserRepo(db *sqlx.DB, hasher usecases.Hasher) repos.AuthNUserRepo {
@@ -37,9 +39,9 @@ func NewPGAuthNUserRepo(db *sqlx.DB, hasher usecases.Hasher) repos.AuthNUserRepo
 }
 
 var insertAuthNUserStatement = `
-INSERT INTO authentication_user (id, username, email, password) 
-VALUES ($1, $2, $3, $4)
-RETURNING id, username, email
+INSERT INTO authentication_user (id, username, email, password, role_id) 
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, username, email, role_id
 `
 
 func (r *pgAuthNUserRepo) Create(user *resources.AuthNUser, password string) (*resources.AuthNUser, error) {
@@ -56,6 +58,7 @@ func (r *pgAuthNUserRepo) Create(user *resources.AuthNUser, password string) (*r
 		user.Username,
 		user.Email,
 		hashedPassword,
+		user.Role.ID,
 	).StructScan(&au)
 	if err != nil {
 		if err, ok := err.(*pq.Error); ok && err.Code == "23505" {
@@ -64,7 +67,7 @@ func (r *pgAuthNUserRepo) Create(user *resources.AuthNUser, password string) (*r
 		log.Print(err)
 		return nil, err
 	}
-	return au.toResource(), err
+	return au.toResource(user.Role), err
 }
 
 var selectAuthNUserByUsernameStatement = `

@@ -114,12 +114,15 @@ func migrateUp(t *testing.T, db *sql.DB) {
 func SetUpAuthNUserRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthNUserRepo, []*resources.AuthNUser) {
 	t.Helper()
 
+	adminRole := resources.NewAuthNRole("admin")
+	userRole := resources.NewAuthNRole("user")
+
 	authNUserRepo := NewPGAuthNUserRepo(sqlxDB, crypto.NewDefaultArgon2PassHasher())
 
 	users := []*resources.AuthNUser{
-		resources.NewAuthNUser("domtoretto", "americanmuscle@fastnfurious.com"),
-		resources.NewAuthNUser("brian", "importtuners@fastnfurious.com"),
-		resources.NewAuthNUser("roman", "ejectoseat@fastnfurious.com"),
+		resources.NewAuthNUser("domtoretto", "americanmuscle@fastnfurious.com", adminRole),
+		resources.NewAuthNUser("brian", "importtuners@fastnfurious.com", adminRole),
+		resources.NewAuthNUser("roman", "ejectoseat@fastnfurious.com", userRole),
 	}
 
 	for _, user := range users {
