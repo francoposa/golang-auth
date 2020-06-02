@@ -1,8 +1,6 @@
 package repos
 
 import (
-	"fmt"
-
 	"golang-auth/usecases/resources"
 )
 
@@ -12,18 +10,27 @@ type AuthNUserRepo interface {
 	Verify(username string, password string) (bool, error)
 }
 
-type AuthNUserNotFoundForUsernameError struct {
-	Username string
+
+type AuthNUserNotFoundError struct {
+	errMsg string
 }
 
-func (e *AuthNUserNotFoundForUsernameError) Error() string {
-	return fmt.Sprintf("No AuthNUser found with username %s", e.Username)
+func NewAuthNUserNotFoundError(errMsg string) *AuthNUserNotFoundError {
+	return &AuthNUserNotFoundError{errMsg: errMsg}
 }
 
-type DuplicateAuthNUserForUsernameError struct {
-	Username string
+func (e *AuthNUserNotFoundError) Error() string {
+	return e.errMsg
 }
 
-func (e *DuplicateAuthNUserForUsernameError) Error() string {
-	return fmt.Sprintf("AuthNUser already exists with username %s", e.Username)
+type AuthNUserAlreadyExistsError struct {
+	errMsg string
+}
+
+func NewAuthNUserAlreadyExistsError(errMsg string) *AuthNUserAlreadyExistsError {
+	return &AuthNUserAlreadyExistsError{errMsg: errMsg}
+}
+
+func (e *AuthNUserAlreadyExistsError) Error() string {
+	return e.errMsg
 }

@@ -7,7 +7,7 @@ import (
 )
 
 type AuthNRoleRepo interface {
-	GetByName(role string) (*resources.AuthNRole, error)
+	GetByName(roleName string) (*resources.AuthNRole, error)
 	GetByID(id uuid.UUID) (*resources.AuthNRole, error)
 	Create(role *resources.AuthNRole) (*resources.AuthNRole, error)
 }
@@ -24,10 +24,14 @@ func (e *AuthNRoleNotFoundError) Error() string {
 	return e.errMsg
 }
 
-type DuplicateAuthNRole struct {
+type AuthNRoleAlreadyExistsError struct {
 	errMsg string
 }
 
-func (e *DuplicateAuthNRole) Error() string {
+func NewAuthNRoleAlreadyExistsError(errMsg string) *AuthNRoleAlreadyExistsError {
+	return &AuthNRoleAlreadyExistsError{errMsg: errMsg}
+}
+
+func (e *AuthNRoleAlreadyExistsError) Error() string {
 	return e.errMsg
 }

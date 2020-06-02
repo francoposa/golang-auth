@@ -18,11 +18,12 @@ import (
 func setupTestAuthNUserHandler(t *testing.T, sqlxDB *sqlx.DB) *mux.Router {
 	t.Helper()
 
-	AuthNUserRepo, _ := db.SetUpAuthNUserRepo(t, sqlxDB)
-	AuthNUserHandler := AuthNUserHandler{repo: AuthNUserRepo}
+	authNRoleRepo, _ := db.SetUpAuthNRoleRepo(t, sqlxDB)
+	authNUserRepo, _ := db.SetUpAuthNUserRepo(t, sqlxDB, authNRoleRepo)
+	authNUserHandler := AuthNUserHandler{repo: authNUserRepo}
 
 	router := mux.NewRouter()
-	router.HandleFunc("/login", AuthNUserHandler.Authenticate).Methods("POST")
+	router.HandleFunc("/login", authNUserHandler.Authenticate).Methods("POST")
 
 	return router
 }

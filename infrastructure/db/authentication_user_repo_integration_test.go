@@ -14,23 +14,24 @@ func TestPGAuthNUserRepo(t *testing.T) {
 
 	sqlxDB, closeDB := SetUpDB(t)
 	defer closeDB(t, sqlxDB)
-	AuthNUserRepo, _ := SetUpAuthNUserRepo(t, sqlxDB)
+	authNRoleRepo, _ := SetUpAuthNRoleRepo(t, sqlxDB)
+	authNUserRepo, users := SetUpAuthNUserRepo(t, sqlxDB, authNRoleRepo)
 
-	AuthNUser := resources.NewAuthNUser("suki", "pink2000@honda.com")
+	AuthNUser := resources.NewAuthNUser("suki", "pink2000@honda.com", users[0].Role)
 
 	t.Run("create authn user", func(t *testing.T) {
-		createdAuthNUser, _ := AuthNUserRepo.Create(AuthNUser, "suki_pass")
+		createdAuthNUser, _ := authNUserRepo.Create(AuthNUser, "suki_pass")
 		assertAuthNUser(assertions, AuthNUser, createdAuthNUser)
 	})
 
 	t.Run("create already existing user - error", func(t *testing.T) {
-		alreadyCreatedAuthNUser, err := AuthNUserRepo.Create(AuthNUser, "suki_pass")
+		alreadyCreatedAuthNUser, err := authNUserRepo.Create(AuthNUser, "suki_pass")
 		assertions.Nil(alreadyCreatedAuthNUser, "expected nil struct, got: %q", alreadyCreatedAuthNUser)
-		assertions.IsType(&repos.DuplicateAuthNUserForUsernameError{}, err)
+		assertions.IsType(&repos.AuthNUserAlreadyExistsError{}, err)
 	})
 
 	t.Run("get authn user", func(t *testing.T) {
-		retrievedAuthNUser, err := AuthNUserRepo.Get(AuthNUser.Username)
+		retrievedAuthNUser, err := authNUserRepo.Get(AuthNUser.Username)
 		if err != nil {
 			t.Error(err)
 		}
@@ -38,19 +39,19 @@ func TestPGAuthNUserRepo(t *testing.T) {
 	})
 
 	t.Run("get nonexistent authn user - error", func(t *testing.T) {
-		nonexistentAuthNUser, err := AuthNUserRepo.Get("xxx")
+		nonexistentAuthNUser, err := authNUserRepo.Get("xxx")
 		assertions.Nil(nonexistentAuthNUser, "expected nil struct, got: %q", nonexistentAuthNUser)
-		assertions.IsType(&repos.AuthNUserNotFoundForUsernameError{}, err)
+		assertions.IsType(&repos.AuthNUserNotFoundError{}, err)
 	})
 
 	t.Run("verify authn user password", func(t *testing.T) {
-		verified, err := AuthNUserRepo.Verify(AuthNUser.Username, "suki_pass")
+		verified, err := authNUserRepo.Verify(AuthNUser.Username, "suki_pass")
 		if err != nil {
 			t.Error(err)
 		}
 		assertions.True(verified, "correct password was not verified")
 
-		verified, err = AuthNUserRepo.Verify(AuthNUser.Username, "Suki_pass")
+		verified, err = authNUserRepo.Verify(AuthNUser.Username, "Suki_pass")
 		if err != nil {
 			t.Error(err)
 		}

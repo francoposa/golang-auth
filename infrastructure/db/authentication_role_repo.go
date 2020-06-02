@@ -36,8 +36,7 @@ func (r *pgAuthNRoleRepo) Create(role *resources.AuthNRole) (*resources.AuthNRol
 	).StructScan(&createdRole)
 	if err != nil {
 		if err, ok := err.(*pq.Error); ok && err.Code == "23505" {
-			errMsg := fmt.Sprintf("AuthNRole already exists")
-			return nil, &repos.DuplicateAuthNRole{errMsg}
+			return nil, repos.NewAuthNRoleAlreadyExistsError("AuthNRole already exists")
 		}
 		log.Print(err)
 		return nil, err

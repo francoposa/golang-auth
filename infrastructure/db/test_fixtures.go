@@ -111,13 +111,19 @@ func migrateUp(t *testing.T, db *sql.DB) {
 	}
 }
 
-func SetUpAuthNUserRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthNUserRepo, []*resources.AuthNUser) {
+func SetUpAuthNUserRepo(t *testing.T, sqlxDB *sqlx.DB, authNRoleRepo repos.AuthNRoleRepo) (repos.AuthNUserRepo, []*resources.AuthNUser) {
 	t.Helper()
 
-	adminRole := resources.NewAuthNRole("admin")
-	userRole := resources.NewAuthNRole("user")
+	adminRole, err := authNRoleRepo.GetByName("admin")
+	if err != nil {
+		panic(err)
+	}
+	userRole, err := authNRoleRepo.GetByName("user")
+	if err != nil {
+		panic(err)
+	}
 
-	authNUserRepo := NewPGAuthNUserRepo(sqlxDB, crypto.NewDefaultArgon2PassHasher())
+	authNUserRepo := NewPGAuthNUserRepo(sqlxDB, crypto.NewDefaultArgon2PassHasher(), authNRoleRepo)
 
 	users := []*resources.AuthNUser{
 		resources.NewAuthNUser("domtoretto", "americanmuscle@fastnfurious.com", adminRole),

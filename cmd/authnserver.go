@@ -23,16 +23,16 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/rs/cors"
-	"golang-auth/infrastructure/crypto"
-	"golang-auth/infrastructure/db"
-	"golang-auth/infrastructure/server"
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"github.com/spf13/cobra"
+	"golang-auth/infrastructure/crypto"
+	"golang-auth/infrastructure/db"
+	"golang-auth/infrastructure/server"
 )
 
 // authnserverCmd represents the authnserver command
@@ -53,7 +53,9 @@ to quickly create a Cobra application.`,
 
 		hasher := crypto.NewDefaultArgon2PassHasher()
 
-		authNUserRepo := db.NewPGAuthNUserRepo(sqlxDB, hasher)
+		authNRoleRepo := db.NewPGAuthNRoleRepo(sqlxDB)
+
+		authNUserRepo := db.NewPGAuthNUserRepo(sqlxDB, hasher, authNRoleRepo)
 		authNUserHandler := server.NewAuthNUserHandler(authNUserRepo)
 
 		router := mux.NewRouter()
