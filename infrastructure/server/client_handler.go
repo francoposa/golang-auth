@@ -77,7 +77,7 @@ func (h *ClientHandler) Create(w http.ResponseWriter, r *http.Request) {
 //		w.WriteHeader(http.StatusBadRequest)
 //		return
 //	}
-//	client, err := c.repo.Get(uid)
+//	client, err := c.repo.GetByName(uid)
 //	if err != nil {
 //		w.WriteHeader(http.StatusInternalServerError)
 //	} else {

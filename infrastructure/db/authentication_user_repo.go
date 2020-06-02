@@ -12,22 +12,6 @@ import (
 	"golang-auth/usecases/resources"
 )
 
-type pgAuthNUserModel struct {
-	ID       uuid.UUID
-	Username string
-	Email    string
-	Password string
-}
-
-func (model pgAuthNUserModel) toResource(role resources.AuthNRole) *resources.AuthNUser {
-	return &resources.AuthNUser{
-		ID:       model.ID,
-		Username: model.Username,
-		Email:    model.Email,
-		Role:     role,
-	}
-}
-
 type pgAuthNUserRepo struct {
 	db            *sqlx.DB
 	hasher        usecases.Hasher
@@ -51,7 +35,11 @@ func (r *pgAuthNUserRepo) Create(user *resources.AuthNUser, password string) (*r
 		return nil, err
 	}
 
-	var au pgAuthNUserModel
+	var id uuid.UUID
+	var username string
+	var email string
+	var role_id uuid.UUID
+
 	err = r.db.QueryRowx(
 		insertAuthNUserStatement,
 		user.ID,
@@ -59,7 +47,7 @@ func (r *pgAuthNUserRepo) Create(user *resources.AuthNUser, password string) (*r
 		user.Email,
 		hashedPassword,
 		user.Role.ID,
-	).StructScan(&au)
+	).Scan(&id, &username, &email, &role_id)
 	if err != nil {
 		if err, ok := err.(*pq.Error); ok && err.Code == "23505" {
 			return nil, &repos.DuplicateAuthNUserForUsernameError{Username: user.Username}
@@ -67,7 +55,14 @@ func (r *pgAuthNUserRepo) Create(user *resources.AuthNUser, password string) (*r
 		log.Print(err)
 		return nil, err
 	}
-	return au.toResource(user.Role), err
+
+	role, err := r.authNRoleRepo.GetByName()
+
+	return &resources.AuthNUser{
+		ID:       id,
+		Username: username,
+		Email:    email,
+	}, nil
 }
 
 var selectAuthNUserByUsernameStatement = `

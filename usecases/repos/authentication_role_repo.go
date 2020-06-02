@@ -1,28 +1,33 @@
 package repos
 
 import (
-	"fmt"
+	"github.com/google/uuid"
 
 	"golang-auth/usecases/resources"
 )
 
 type AuthNRoleRepo interface {
-	Get(role string) (*resources.AuthNRole, error)
+	GetByName(role string) (*resources.AuthNRole, error)
+	GetByID(id uuid.UUID) (*resources.AuthNRole, error)
 	Create(role *resources.AuthNRole) (*resources.AuthNRole, error)
 }
 
 type AuthNRoleNotFoundError struct {
-	Role string
+	errMsg string
+}
+
+func NewAuthNRoleNotFoundError(errMsg string) *AuthNRoleNotFoundError {
+	return &AuthNRoleNotFoundError{errMsg: errMsg}
 }
 
 func (e *AuthNRoleNotFoundError) Error() string {
-	return fmt.Sprintf("No AuthNRole found with role %s", e.Role)
+	return e.errMsg
 }
 
 type DuplicateAuthNRole struct {
-	Role string
+	errMsg string
 }
 
 func (e *DuplicateAuthNRole) Error() string {
-	return fmt.Sprintf("AuthNRole already exists with role %s", e.Role)
+	return e.errMsg
 }
