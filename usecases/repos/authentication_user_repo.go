@@ -10,7 +10,6 @@ type AuthNUserRepo interface {
 	Verify(username string, password string) (bool, error)
 }
 
-
 type AuthNUserNotFoundError struct {
 	errMsg string
 }
