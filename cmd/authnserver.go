@@ -25,11 +25,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/spf13/cobra"
+
 	"golang-auth/infrastructure/crypto"
 	"golang-auth/infrastructure/db"
 	"golang-auth/infrastructure/server"
@@ -47,6 +50,18 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
+		wd, err := os.Getwd()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		templatePattern := filepath.Join(wd, "/infrastructure/web/templates/*")
+		baseTemplatePath := filepath.Join(wd, "infrastructure/web/templates/base.gohtml")
+
+		templates := server.NewTemplates(templatePattern, baseTemplatePath)
+
+		templateRenderer := server.NewTemplateRenderer(templates, "base.gohtml")
+
 		pgConfig := db.NewDefaultPostgresConfig("examplecom_auth")
 		sqlxDB := db.MustConnect(pgConfig)
 
@@ -57,7 +72,10 @@ to quickly create a Cobra application.`,
 		authNUserRepo := db.NewPGAuthNUserRepo(sqlxDB, hasher, authNRoleRepo)
 		authNUserHandler := server.NewAuthNUserHandler(authNUserRepo)
 
+		loginHandler := server.NewLoginHandler(authNUserRepo, templateRenderer, "login")
+
 		router := mux.NewRouter()
+		router.HandleFunc("/login", loginHandler.Get).Methods("GET")
 		router.HandleFunc("/login", authNUserHandler.Authenticate).Methods("POST")
 
 		handler := cors.Default().Handler(router)

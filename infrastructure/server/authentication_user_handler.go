@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"golang-auth/usecases/repos"
-	"log"
 	"net/http"
 )
 
@@ -30,7 +29,6 @@ func (h *AuthNUserHandler) Authenticate(w http.ResponseWriter, r *http.Request) 
 
 	verified, err := h.repo.Verify(postedUserAuth.Username, postedUserAuth.Password)
 	if err != nil {
-		log.Print(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

@@ -16,7 +16,7 @@ require (
 	github.com/gorilla/mux v1.7.4
 	github.com/jmoiron/sqlx v1.2.1-0.20190826204134-d7d95172beb5
 	github.com/kr/text v0.2.0 // indirect
-	github.com/lib/pq v1.5.2
+	github.com/lib/pq v1.7.0
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
@@ -28,6 +28,6 @@ require (
 	github.com/spf13/viper v1.6.3
 	github.com/stretchr/testify v1.5.1
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
-	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b // indirect
+	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e // indirect
 	golang.org/x/text v0.3.2 // indirect
 )

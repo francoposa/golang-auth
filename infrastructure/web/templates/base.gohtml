@@ -1,0 +1,34 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html lang="en">
+    {{template "head" .}}
+    {{template "body" .}}
+</html>
+{{end}}
+
+{{define "head"}}
+    <head>
+        <meta charset="UTF-8">
+        <title>Golang Auth - {{ .Title }}</title>
+        <meta name="description" content="{{ .Description }}">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+              integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    </head>
+{{end}}
+
+{{define "body"}}
+    <body>
+    <div class="container">
+        <div class="row">
+            <div id="navbar-site-title" class="col-md-3 col-xs-12">
+                <a href="/">Golang Auth</a>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        {{block "content" .}}{{end}}
+    </div>
+    </body>
+{{end}}
