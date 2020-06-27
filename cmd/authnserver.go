@@ -60,7 +60,7 @@ to quickly create a Cobra application.`,
 
 		templates := server.NewTemplates(templatePattern, baseTemplatePath)
 
-		templateRenderer := server.NewTemplateRenderer(templates, "base.gohtml")
+		templateRenderer := server.NewTemplateRenderer(templates, "base")
 
 		pgConfig := db.NewDefaultPostgresConfig("examplecom_auth")
 		sqlxDB := db.MustConnect(pgConfig)
@@ -72,7 +72,7 @@ to quickly create a Cobra application.`,
 		authNUserRepo := db.NewPGAuthNUserRepo(sqlxDB, hasher, authNRoleRepo)
 		authNUserHandler := server.NewAuthNUserHandler(authNUserRepo)
 
-		loginHandler := server.NewLoginHandler(authNUserRepo, templateRenderer, "login")
+		loginHandler := server.NewLoginHandler(authNUserRepo, templateRenderer, "login.gohtml")
 
 		router := mux.NewRouter()
 		router.HandleFunc("/login", loginHandler.Get).Methods("GET")

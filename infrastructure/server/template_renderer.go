@@ -17,11 +17,12 @@ func NewTemplates(pattern, baseTemplatePath string) map[string]*template.Templat
 	}
 
 	for _, templatePath := range templatePaths {
+		if templatePath == baseTemplatePath {
+			continue
+		}
 		fileName := filepath.Base(templatePath)
-		extension := filepath.Ext(fileName)
-		fileName = fileName[0 : len(fileName)-len(extension)]
 		templates[fileName] = template.Must(
-			template.ParseFiles(baseTemplatePath, templatePath),
+			template.ParseFiles(templatePath, baseTemplatePath),
 		)
 	}
 
@@ -37,10 +38,10 @@ func NewTemplateRenderer(templates map[string]*template.Template, baseTemplateNa
 	return &TemplateRenderer{templates: templates, baseTemplatePath: baseTemplateName}
 }
 
-func (tr *TemplateRenderer) RenderTemplate(w http.ResponseWriter, templateName string, data interface{}) error {
-	templateToRender, ok := tr.templates[templateName]
+func (tr *TemplateRenderer) RenderTemplate(w http.ResponseWriter, templateFileName string, data interface{}) error {
+	templateToRender, ok := tr.templates[templateFileName]
 	if !ok {
-		return fmt.Errorf("The templateToRender %s does not exist.", templateName)
+		return fmt.Errorf("The templateToRender %s does not exist.", templateFileName)
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
