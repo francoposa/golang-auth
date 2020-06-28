@@ -2,6 +2,31 @@
 
 {{define "title"}}Login{{end}}
 
-{{define "content"}}
-<h1>Login Yall</h1>
+{{define "body"}}
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-12">
+                <h1>Sign In</h1>
+            </div>
+        </div>
+        <div class="row text-center">
+            <div class="col-md-12">
+                <form action="/login" method="post">
+                    <p>
+                        <label for="username">Username</label><br>
+                        <input id="username" name="username" type="text" value="" size=20 autofocus />
+                    </p>
+                    <p>
+                        <label for="password">Password</label><br>
+                        <input id="password" name="password" type="password" value="" size=20 />
+                    </p>
+                    <input class="btn btn-outline-dark" type="submit" value="login" />
+                </form>
+            </div>
+        </div>
+    </div>
+{{end}}
+
+{{define "scripts"}}
+    <script src="../static/js/axios-requests.js"></script>
 {{end}}
