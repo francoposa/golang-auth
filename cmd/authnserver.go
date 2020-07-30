@@ -29,6 +29,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/spf13/cobra"
@@ -68,17 +69,31 @@ to quickly create a Cobra application.`,
 		hasher := crypto.NewDefaultArgon2PassHasher()
 
 		authNRoleRepo := db.NewPGAuthNRoleRepo(sqlxDB)
+		//role, _ := authNRoleRepo.Create(resources.NewAuthNRole("user"))
 
 		authNUserRepo := db.NewPGAuthNUserRepo(sqlxDB, hasher, authNRoleRepo)
+		//_, _ = authNUserRepo.Create(resources.NewAuthNUser("test", "test@test.com", role), "test")
 		authNUserHandler := server.NewAuthNUserHandler(authNUserRepo)
 
 		loginHandler := server.NewLoginHandler(authNUserRepo, templateRenderer, "login.gohtml")
 
 		router := mux.NewRouter()
+		// Routing to FileServer handler for static web assets
+		// Choose the folder to serve
+		appRootDir, err := os.Getwd()
+		if err != nil {
+			log.Fatal(err)
+		}
+		httpStaticAssetsDir := http.Dir(fmt.Sprintf("/%s/infrastructure/web/static/", appRootDir))
+		staticRoute := "/static/"
+		router.PathPrefix(staticRoute).Handler(http.StripPrefix(staticRoute, http.FileServer(httpStaticAssetsDir)))
+
+		// Routing to HTML Template and API handlers
 		router.HandleFunc("/login", loginHandler.Get).Methods("GET")
 		router.HandleFunc("/login", authNUserHandler.Authenticate).Methods("POST")
 
 		handler := cors.Default().Handler(router)
+		handler = handlers.LoggingHandler(os.Stdout, handler)
 
 		srv := &http.Server{
 			Handler: handler,

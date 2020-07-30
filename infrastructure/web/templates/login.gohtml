@@ -11,7 +11,7 @@
         </div>
         <div class="row text-center">
             <div class="col-md-12">
-                <form action="/login" method="post">
+                <form id="login" action="/login" method="post">
                     <p>
                         <label for="username">Username</label><br>
                         <input id="username" name="username" type="text" value="" size=20 autofocus />
@@ -20,7 +20,7 @@
                         <label for="password">Password</label><br>
                         <input id="password" name="password" type="password" value="" size=20 />
                     </p>
-                    <input class="btn btn-outline-dark" type="submit" value="login" />
+                    <input class="btn btn-outline-dark" type="button" value="login" onClick="postLogin()" />
                 </form>
             </div>
         </div>
@@ -28,5 +28,6 @@
 {{end}}
 
 {{define "scripts"}}
-    <script src="../static/js/axios-requests.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="/static/js/axios-requests.js"></script>
 {{end}}
