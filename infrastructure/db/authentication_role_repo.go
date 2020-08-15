@@ -22,9 +22,9 @@ func NewPGAuthNRoleRepo(db *sqlx.DB) repos.AuthNRoleRepo {
 }
 
 var insertRoleStatement = `
-INSERT INTO authentication_role (id, role)
+INSERT INTO authentication_role (id, role_name)
 VALUES ($1, $2)
-RETURNING id, role
+RETURNING id, role_name
 `
 
 func (r *pgAuthNRoleRepo) Create(role *resources.AuthNRole) (*resources.AuthNRole, error) {
@@ -71,7 +71,7 @@ func (r *pgAuthNRoleRepo) GetByID(id uuid.UUID) (*resources.AuthNRole, error) {
 
 var selectRoleByRoleNameStatement = `
 SELECT * FROM authentication_role
-WHERE role=$1
+WHERE role_name=$1
 `
 
 func (r *pgAuthNRoleRepo) GetByName(roleName string) (*resources.AuthNRole, error) {
