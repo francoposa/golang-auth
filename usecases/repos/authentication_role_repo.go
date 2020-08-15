@@ -14,16 +14,12 @@ type AuthNRoleRepo interface {
 	Create(role *resources.AuthNRole) (*resources.AuthNRole, error)
 }
 
-type AuthNRoleNotFoundError struct {
-	errMsg string
+type AuthNRoleNameNotFoundError struct {
+	RoleName string
 }
 
-func NewAuthNRoleNotFoundError(errMsg string) AuthNRoleNotFoundError {
-	return AuthNRoleNotFoundError{errMsg: errMsg}
-}
-
-func (e AuthNRoleNotFoundError) Error() string {
-	return e.errMsg
+func (e AuthNRoleNameNotFoundError) Error() string {
+	return fmt.Sprintf("No AuthNUser found with role name %s", e.RoleName)
 }
 
 type AuthNRoleNameAlreadyExistsError struct {
@@ -31,5 +27,5 @@ type AuthNRoleNameAlreadyExistsError struct {
 }
 
 func (e AuthNRoleNameAlreadyExistsError) Error() string {
-	return fmt.Sprintf("AuthNRole already exists with rolename %s", e.RoleName)
+	return fmt.Sprintf("AuthNRole already exists with role name %s", e.RoleName)
 }

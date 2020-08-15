@@ -39,7 +39,7 @@ func TestPGAuthNRoleRepo(t *testing.T) {
 	t.Run("get nonexistent role - error", func(t *testing.T) {
 		nonexistentRole, err := authNRoleRepo.GetByName("xxx")
 		assertions.Nil(nonexistentRole, "expected nil struct, got: %q", nonexistentRole)
-		assertions.IsType(repos.AuthNRoleNotFoundError{}, err)
+		assertions.IsType(repos.AuthNRoleNameNotFoundError{}, err)
 	})
 }
 

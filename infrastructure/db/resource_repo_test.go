@@ -1,10 +1,11 @@
 package db
 
 import (
-	"github.com/stretchr/testify/assert"
 	"golang-auth/usecases/repos"
 	"golang-auth/usecases/resources"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPGResourceRepo(t *testing.T) {
@@ -24,11 +25,11 @@ func TestPGResourceRepo(t *testing.T) {
 	t.Run("create already existing resource - error", func(t *testing.T) {
 		alreadyCreatedResource, err := resourceRepo.Create(resource)
 		assertions.Nil(alreadyCreatedResource)
-		assertions.IsType(&repos.DuplicateResourceForNameError{}, err)
+		assertions.IsType(&repos.ResourceNameAlreadyExistsError{}, err)
 	})
 
 	t.Run("get resource", func(t *testing.T) {
-		retrievedResource, err := resourceRepo.Get(resource.Resource)
+		retrievedResource, err := resourceRepo.Get(resource.ResourceName)
 		if err != nil {
 			t.Error(err)
 		}
@@ -38,7 +39,7 @@ func TestPGResourceRepo(t *testing.T) {
 	t.Run("get nonexistent resource - error", func(t *testing.T) {
 		nonexistentResource, err := resourceRepo.Get("xxx")
 		assertions.Nil(nonexistentResource, "expected nil struct, got: %q", nonexistentResource)
-		assertions.IsType(&repos.ResourceNotFoundForNameError{}, err)
+		assertions.IsType(&repos.ResourceNameNotFoundError{}, err)
 	})
 }
 

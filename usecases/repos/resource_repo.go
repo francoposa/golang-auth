@@ -10,18 +10,18 @@ type ResourceRepo interface {
 	Get(name string) (*resources.Resource, error)
 }
 
-type ResourceNotFoundForNameError struct {
-	Name string
+type ResourceNameNotFoundError struct {
+	ResourceName string
 }
 
-func (e *ResourceNotFoundForNameError) Error() string {
-	return fmt.Sprintf("No Resource found with name %s", e.Name)
+func (e *ResourceNameNotFoundError) Error() string {
+	return fmt.Sprintf("No ResourceName found with name %s", e.ResourceName)
 }
 
-type DuplicateResourceForNameError struct {
-	Name string
+type ResourceNameAlreadyExistsError struct {
+	ResourceName string
 }
 
-func (e *DuplicateResourceForNameError) Error() string {
-	return fmt.Sprintf("Resource already exists with name %s", e.Name)
+func (e *ResourceNameAlreadyExistsError) Error() string {
+	return fmt.Sprintf("ResourceName already exists with name %s", e.ResourceName)
 }

@@ -1,8 +1,8 @@
 -- +goose Up
 CREATE TABLE IF NOT EXISTS resource
 (
-    id        TEXT NOT NULL PRIMARY KEY,
-    resource  TEXT NOT NULL UNIQUE
+    id             TEXT NOT NULL PRIMARY KEY,
+    resource_name  TEXT NOT NULL UNIQUE
 );
 
 -- +goose Down

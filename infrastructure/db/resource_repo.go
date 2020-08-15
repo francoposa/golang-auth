@@ -1,25 +1,15 @@
 package db
 
 import (
-	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
-	"github.com/lib/pq"
 	"golang-auth/usecases/repos"
 	"golang-auth/usecases/resources"
 	"log"
+
+	"github.com/google/uuid"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
-
-type pgResourceModel struct {
-	ID       uuid.UUID
-	Resource string
-}
-
-func (model pgResourceModel) toResource() *resources.Resource {
-	return &resources.Resource{
-		ID:       model.ID,
-		Resource: model.Resource,
-	}
-}
 
 type pgResourceRepo struct {
 	db *sqlx.DB
@@ -30,42 +20,46 @@ func NewPGResourceRepo(db *sqlx.DB) repos.ResourceRepo {
 }
 
 var insertResourceStatement = `
-INSERT INTO resource (id, resource) 
+INSERT INTO resource (id, resource_name) 
 VALUES ($1, $2)
-RETURNING id, resource
+RETURNING id, resource_name
 `
 
 func (r *pgResourceRepo) Create(resource *resources.Resource) (*resources.Resource, error) {
-	var model pgResourceModel
+	var id uuid.UUID
+	var resourceName string
 	err := r.db.QueryRowx(
 		insertResourceStatement,
 		resource.ID,
-		resource.Resource,
-	).StructScan(&model)
+		resource.ResourceName,
+	).Scan(&id, &resourceName)
 	if err != nil {
 		if err, ok := err.(*pq.Error); ok && err.Code == "23505" {
-			return nil, &repos.DuplicateResourceForNameError{Name: resource.Resource}
+			return nil, &repos.ResourceNameAlreadyExistsError{ResourceName: resource.ResourceName}
 		}
 		log.Print(err)
 		return nil, err
 	}
-	return model.toResource(), err
+	return &resources.Resource{ID: id, ResourceName: resourceName}, err
 }
 
 var selectResourceByNameStatement = `
 SELECT * FROM resource
-WHERE resource=$1
+WHERE resource_name=$1
 `
 
-func (r *pgResourceRepo) Get(name string) (*resources.Resource, error) {
-	var model pgResourceModel
-	err := r.db.QueryRowx(selectResourceByNameStatement, name).StructScan(&model)
+func (r *pgResourceRepo) Get(resourceName string) (*resources.Resource, error) {
+	var id uuid.UUID
+	var retrievedResourceName string
+	err := r.db.QueryRowx(selectResourceByNameStatement,
+		resourceName,
+	).Scan(&id, &retrievedResourceName)
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
-			return nil, &repos.ResourceNotFoundForNameError{Name: name}
+			return nil, &repos.ResourceNameNotFoundError{ResourceName: resourceName}
 		}
 		log.Print(err)
 		return nil, err
 	}
-	return model.toResource(), err
+	return &resources.Resource{ID: id, ResourceName: retrievedResourceName}, err
 }

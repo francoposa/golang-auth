@@ -1,7 +1,6 @@
 package db
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/google/uuid"
@@ -60,8 +59,7 @@ func (r *pgAuthNRoleRepo) GetByID(id uuid.UUID) (*resources.AuthNRole, error) {
 
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
-			errMsg := fmt.Sprintf("No AuthNRole found with id %v", id)
-			return nil, repos.NewAuthNRoleNotFoundError(errMsg)
+			return nil, repos.AuthNRoleNameNotFoundError{RoleName: roleName}
 		}
 		log.Print(err)
 		return nil, err
@@ -84,8 +82,7 @@ func (r *pgAuthNRoleRepo) GetByName(roleName string) (*resources.AuthNRole, erro
 
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
-			errMsg := fmt.Sprintf("No AuthNRole found with role name %s", roleName)
-			return nil, repos.NewAuthNRoleNotFoundError(errMsg)
+			return nil, repos.AuthNRoleNameNotFoundError{RoleName: roleName}
 		}
 		log.Print(err)
 		return nil, err
