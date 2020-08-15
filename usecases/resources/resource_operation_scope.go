@@ -2,8 +2,9 @@ package resources
 
 import (
 	"errors"
-	"github.com/google/uuid"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 //// OpenID Connect Scope as defined in OIDC Core Section 5.4 - Requesting Claims using Scope Values
@@ -57,7 +58,7 @@ func (role AuthZUserRole) IsValid() bool {
 type InvalidAuthZUserRoleError struct{}
 
 func (e *InvalidAuthZUserRoleError) Error() string {
-	return "Invalid ExampleCom Authorization User Role"
+	return "Invalid ExampleCom Authorization User RoleName"
 }
 
 type ResourceOperation string

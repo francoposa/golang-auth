@@ -1,6 +1,8 @@
 package repos
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 
 	"golang-auth/usecases/resources"
@@ -16,22 +18,18 @@ type AuthNRoleNotFoundError struct {
 	errMsg string
 }
 
-func NewAuthNRoleNotFoundError(errMsg string) *AuthNRoleNotFoundError {
-	return &AuthNRoleNotFoundError{errMsg: errMsg}
+func NewAuthNRoleNotFoundError(errMsg string) AuthNRoleNotFoundError {
+	return AuthNRoleNotFoundError{errMsg: errMsg}
 }
 
-func (e *AuthNRoleNotFoundError) Error() string {
+func (e AuthNRoleNotFoundError) Error() string {
 	return e.errMsg
 }
 
-type AuthNRoleAlreadyExistsError struct {
-	errMsg string
+type AuthNRoleNameAlreadyExistsError struct {
+	RoleName string
 }
 
-func NewAuthNRoleAlreadyExistsError(errMsg string) *AuthNRoleAlreadyExistsError {
-	return &AuthNRoleAlreadyExistsError{errMsg: errMsg}
-}
-
-func (e *AuthNRoleAlreadyExistsError) Error() string {
-	return e.errMsg
+func (e AuthNRoleNameAlreadyExistsError) Error() string {
+	return fmt.Sprintf("AuthNRole already exists with rolename %s", e.RoleName)
 }

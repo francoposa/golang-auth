@@ -27,7 +27,7 @@ func TestPGAuthNUserRepo(t *testing.T) {
 	t.Run("create already existing user - error", func(t *testing.T) {
 		alreadyCreatedAuthNUser, err := authNUserRepo.Create(AuthNUser, "suki_pass")
 		assertions.Nil(alreadyCreatedAuthNUser, "expected nil struct, got: %q", alreadyCreatedAuthNUser)
-		assertions.IsType(&repos.AuthNUserAlreadyExistsError{}, err)
+		assertions.IsType(repos.AuthNUsernameAlreadyExistsError{}, err)
 	})
 
 	t.Run("get authn user", func(t *testing.T) {
@@ -41,7 +41,7 @@ func TestPGAuthNUserRepo(t *testing.T) {
 	t.Run("get nonexistent authn user - error", func(t *testing.T) {
 		nonexistentAuthNUser, err := authNUserRepo.Get("xxx")
 		assertions.Nil(nonexistentAuthNUser, "expected nil struct, got: %q", nonexistentAuthNUser)
-		assertions.IsType(&repos.AuthNUserNotFoundError{}, err)
+		assertions.IsType(repos.AuthNUserUsernameNotFoundError{}, err)
 	})
 
 	t.Run("verify authn user password", func(t *testing.T) {

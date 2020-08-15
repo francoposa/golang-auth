@@ -3,11 +3,11 @@ package resources
 import "github.com/google/uuid"
 
 type AuthNRole struct {
-	ID   uuid.UUID
-	Role string
+	ID       uuid.UUID
+	RoleName string
 }
 
-func NewAuthNRole(role string) *AuthNRole {
+func NewAuthNRole(roleName string) *AuthNRole {
 	id := uuid.New()
-	return &AuthNRole{ID: id, Role: role}
+	return &AuthNRole{ID: id, RoleName: roleName}
 }

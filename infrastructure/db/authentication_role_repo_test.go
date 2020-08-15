@@ -1,10 +1,11 @@
 package db
 
 import (
-	"github.com/stretchr/testify/assert"
 	"golang-auth/usecases/repos"
 	"golang-auth/usecases/resources"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPGAuthNRoleRepo(t *testing.T) {
@@ -24,11 +25,11 @@ func TestPGAuthNRoleRepo(t *testing.T) {
 	t.Run("create already existing role - error", func(t *testing.T) {
 		alreadyCreatedRole, err := authNRoleRepo.Create(role)
 		assertions.Nil(alreadyCreatedRole)
-		assertions.IsType(&repos.AuthNRoleAlreadyExistsError{}, err)
+		assertions.IsType(repos.AuthNRoleNameAlreadyExistsError{}, err)
 	})
 
 	t.Run("get role", func(t *testing.T) {
-		retrievedRole, err := authNRoleRepo.GetByName(role.Role)
+		retrievedRole, err := authNRoleRepo.GetByName(role.RoleName)
 		if err != nil {
 			t.Error(err)
 		}
@@ -38,7 +39,7 @@ func TestPGAuthNRoleRepo(t *testing.T) {
 	t.Run("get nonexistent role - error", func(t *testing.T) {
 		nonexistentRole, err := authNRoleRepo.GetByName("xxx")
 		assertions.Nil(nonexistentRole, "expected nil struct, got: %q", nonexistentRole)
-		assertions.IsType(&repos.AuthNRoleNotFoundError{}, err)
+		assertions.IsType(repos.AuthNRoleNotFoundError{}, err)
 	})
 }
 

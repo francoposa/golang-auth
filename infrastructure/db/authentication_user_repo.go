@@ -1,7 +1,6 @@
 package db
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/google/uuid"
@@ -51,7 +50,7 @@ func (r *pgAuthNUserRepo) Create(user *resources.AuthNUser, password string) (*r
 	).Scan(&id, &username, &email, &role_id)
 	if err != nil {
 		if err, ok := err.(*pq.Error); ok && err.Code == "23505" {
-			return nil, repos.NewAuthNUserAlreadyExistsError("AuthNUser already exists")
+			return nil, repos.AuthNUsernameAlreadyExistsError{Username: username}
 		}
 		log.Print(err)
 		return nil, err
@@ -88,8 +87,7 @@ func (r *pgAuthNUserRepo) Get(username string) (*resources.AuthNUser, error) {
 
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
-			errMsg := fmt.Sprintf("No AuthNUser found with username %s", username)
-			return nil, repos.NewAuthNUserNotFoundError(errMsg)
+			return nil, repos.AuthNUserUsernameNotFoundError{username}
 		}
 		log.Print(err)
 		return nil, err
@@ -127,8 +125,7 @@ func (r *pgAuthNUserRepo) Verify(username string, password string) (bool, error)
 
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
-			errMsg := fmt.Sprintf("No AuthNUser found with username %s", username)
-			return false, repos.NewAuthNUserNotFoundError(errMsg)
+			return false, repos.AuthNUserUsernameNotFoundError{username}
 		}
 		log.Print(err)
 		return false, err
