@@ -17,9 +17,9 @@ type pgClientModel struct {
 	FirstParty  bool `db:"first_party"`
 }
 
-func (model pgClientModel) toResource() *resources.Client {
+func (model pgClientModel) toResource() *resources.AuthZClient {
 	uri, _ := url.Parse(model.RedirectURI)
-	return &resources.Client{
+	return &resources.AuthZClient{
 		ID:          model.ID,
 		Secret:      model.Secret,
 		RedirectURI: uri,
@@ -28,21 +28,21 @@ func (model pgClientModel) toResource() *resources.Client {
 	}
 }
 
-type pgClientRepo struct {
+type pgAuthZClientRepo struct {
 	db *sqlx.DB
 }
 
-func NewPGClientRepo(db *sqlx.DB) repos.ClientRepo {
-	return &pgClientRepo{db: db}
+func NewPGAuthZClientRepo(db *sqlx.DB) repos.AuthZClientRepo {
+	return &pgAuthZClientRepo{db: db}
 }
 
 var insertClientStatement = `
-INSERT INTO client (id, secret, redirect_uri, public, first_party) 
+INSERT INTO authz_client (id, secret, redirect_uri, public, first_party) 
 VALUES ($1, $2, $3, $4, $5)
 RETURNING id, secret, redirect_uri, public, first_party
 `
 
-func (r *pgClientRepo) Create(client *resources.Client) (*resources.Client, error) {
+func (r *pgAuthZClientRepo) Create(client *resources.AuthZClient) (*resources.AuthZClient, error) {
 	var c pgClientModel
 	err := r.db.QueryRowx(
 		insertClientStatement,
@@ -59,11 +59,11 @@ func (r *pgClientRepo) Create(client *resources.Client) (*resources.Client, erro
 }
 
 var selectClientByIDStatement = `
-SELECT * FROM client
+SELECT * FROM authz_client
 WHERE id=$1
 `
 
-func (r *pgClientRepo) Get(id uuid.UUID) (*resources.Client, error) {
+func (r *pgAuthZClientRepo) Get(id uuid.UUID) (*resources.AuthZClient, error) {
 	var c pgClientModel
 	err := r.db.QueryRowx(selectClientByIDStatement, id).StructScan(&c)
 	if err != nil {

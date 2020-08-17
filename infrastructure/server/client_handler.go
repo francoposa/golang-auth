@@ -24,7 +24,7 @@ type httpResponseClient struct {
 	FirstParty  bool
 }
 
-func responseClientFromResource(resource *resources.Client) httpResponseClient {
+func responseClientFromResource(resource *resources.AuthZClient) httpResponseClient {
 	return httpResponseClient{
 		ID:          resource.ID,
 		Secret:      resource.Secret,
@@ -35,10 +35,10 @@ func responseClientFromResource(resource *resources.Client) httpResponseClient {
 }
 
 type ClientHandler struct {
-	repo repos.ClientRepo
+	repo repos.AuthZClientRepo
 }
 
-func NewClientHandler(repo repos.ClientRepo) *ClientHandler {
+func NewClientHandler(repo repos.AuthZClientRepo) *ClientHandler {
 	return &ClientHandler{repo: repo}
 }
 

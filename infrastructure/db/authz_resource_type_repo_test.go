@@ -13,9 +13,9 @@ func TestPGResourceRepo(t *testing.T) {
 
 	sqlxDB, closeDB := SetUpDB(t)
 	defer closeDB(t, sqlxDB)
-	resourceRepo, _ := SetUpResourceRepo(t, sqlxDB)
+	resourceRepo, _ := SetUpAuthZResourceRepo(t, sqlxDB)
 
-	resource := resources.NewResource("user.favorites")
+	resource := resources.NewAuthZResourceType("payment_method", "ExampleCom User Payment entity")
 
 	t.Run("create resource", func(t *testing.T) {
 		createdResource, _ := resourceRepo.Create(resource)
@@ -29,7 +29,7 @@ func TestPGResourceRepo(t *testing.T) {
 	})
 
 	t.Run("get resource", func(t *testing.T) {
-		retrievedResource, err := resourceRepo.Get(resource.ResourceName)
+		retrievedResource, err := resourceRepo.Get(resource.Name)
 		if err != nil {
 			t.Error(err)
 		}
@@ -43,7 +43,7 @@ func TestPGResourceRepo(t *testing.T) {
 	})
 }
 
-func assertResource(a *assert.Assertions, want, got *resources.Resource) {
+func assertResource(a *assert.Assertions, want, got *resources.AuthZResourceType) {
 	a.Equal(
 		want, got, "expected equivalent structs, want: %q, got: %q", want, got,
 	)

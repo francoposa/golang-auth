@@ -4,16 +4,18 @@ import (
 	"github.com/google/uuid"
 )
 
-// Resource is an abstract entity in the ExampleCom system which may be operated upon
-// OAuth Clients request authorization to operate on Resources on behalf of a Resource Owner.
-type Resource struct {
-	ID           uuid.UUID
-	ResourceName string
+// AuthZResourceType is an abstract entity in the ExampleCom system which may be operated upon
+// OAuth Clients request authorization to operate on Resources on behalf of a AuthZResourceType Owner.
+type AuthZResourceType struct {
+	ID          uuid.UUID
+	Name        string
+	Description string
 }
 
-func NewResource(resourceName string) *Resource {
-	return &Resource{
-		ID:           uuid.New(),
-		ResourceName: resourceName,
+func NewAuthZResourceType(name, description string) *AuthZResourceType {
+	return &AuthZResourceType{
+		ID:          uuid.New(),
+		Name:        name,
+		Description: description,
 	}
 }

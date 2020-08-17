@@ -29,7 +29,7 @@ to quickly create a Cobra application.`,
 		pgConfig := db.NewDefaultPostgresConfig("examplecom_auth")
 		sqlxDB := db.MustConnect(pgConfig)
 
-		clientRepo := db.NewPGClientRepo(sqlxDB)
+		clientRepo := db.NewPGAuthZClientRepo(sqlxDB)
 		clientHandler := server.NewClientHandler(clientRepo)
 
 		authHandler := server.AuthorizationHandler{}

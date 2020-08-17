@@ -6,8 +6,8 @@ import (
 )
 
 type ResourceRepo interface {
-	Create(resource *resources.Resource) (*resources.Resource, error)
-	Get(name string) (*resources.Resource, error)
+	Create(resource *resources.AuthZResourceType) (*resources.AuthZResourceType, error)
+	Get(name string) (*resources.AuthZResourceType, error)
 }
 
 type ResourceNameNotFoundError struct {
@@ -15,7 +15,7 @@ type ResourceNameNotFoundError struct {
 }
 
 func (e *ResourceNameNotFoundError) Error() string {
-	return fmt.Sprintf("No ResourceName found with name %s", e.ResourceName)
+	return fmt.Sprintf("No Name found with name %s", e.ResourceName)
 }
 
 type ResourceNameAlreadyExistsError struct {
@@ -23,5 +23,5 @@ type ResourceNameAlreadyExistsError struct {
 }
 
 func (e *ResourceNameAlreadyExistsError) Error() string {
-	return fmt.Sprintf("ResourceName already exists with name %s", e.ResourceName)
+	return fmt.Sprintf("Name already exists with name %s", e.ResourceName)
 }

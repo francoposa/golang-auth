@@ -68,11 +68,7 @@ to quickly create a Cobra application.`,
 
 		hasher := crypto.NewDefaultArgon2PassHasher()
 
-		authNRoleRepo := db.NewPGAuthNRoleRepo(sqlxDB)
-		//role, _ := authNRoleRepo.Create(resources.NewAuthNRole("user"))
-
-		authNUserRepo := db.NewPGAuthNUserRepo(sqlxDB, hasher, authNRoleRepo)
-		//_, _ = authNUserRepo.Create(resources.NewAuthNUser("test", "test@test.com", role), "test")
+		authNUserRepo := db.NewPGAuthNUserRepo(sqlxDB, hasher)
 		authNUserHandler := server.NewAuthNUserHandler(authNUserRepo)
 
 		loginHandler := server.NewLoginHandler(authNUserRepo, templateRenderer, "login.gohtml")

@@ -1,5 +1,5 @@
 -- +goose Up
-CREATE TABLE IF NOT EXISTS client
+CREATE TABLE IF NOT EXISTS authz_client
 (
     id            TEXT NOT NULL PRIMARY KEY,
     secret        TEXT,
@@ -9,4 +9,4 @@ CREATE TABLE IF NOT EXISTS client
 );
 
 -- +goose Down
-DROP TABLE IF EXISTS client;
+DROP TABLE IF EXISTS authz_client;

@@ -1,9 +1,6 @@
 package resources
 
 import (
-	"errors"
-	"strings"
-
 	"github.com/google/uuid"
 )
 
@@ -81,20 +78,20 @@ func (v ResourceOperation) IsValid() bool {
 type InvalidResourceOperationError struct{}
 
 func (e *InvalidResourceOperationError) Error() string {
-	return "Invalid ExampleCom Resource Operation"
+	return "Invalid ExampleCom AuthZResourceType Operation"
 }
 
 type ResourceOperationScope struct {
 	ID            uuid.UUID
 	AuthNUserRole AuthZUserRole
 	Operation     ResourceOperation
-	Resource      *Resource
+	Resource      *AuthZResourceType
 }
 
 func NewResourceOperationScope(
 	role AuthZUserRole,
 	operation ResourceOperation,
-	resource *Resource,
+	resource *AuthZResourceType,
 ) *ResourceOperationScope {
 	id := uuid.New()
 	return &ResourceOperationScope{
@@ -105,25 +102,25 @@ func NewResourceOperationScope(
 	}
 }
 
-func ParseResourceOperationScope(s string) (*ResourceOperationScope, error) {
-	parts := strings.Split(s, ":")
-	if len(parts) != 3 {
-		return nil, errors.New(
-			"Invalid Resource Operation Scope string. Must be in format `role:operation:resource`",
-		)
-	}
-
-	var role = AuthZUserRole(parts[0])
-	if !role.IsValid() {
-		return nil, &InvalidAuthZUserRoleError{}
-	}
-
-	var verb = ResourceOperation(parts[1])
-	if !verb.IsValid() {
-		return nil, &InvalidResourceOperationError{}
-	}
-
-	var resource = NewResource(parts[2])
-
-	return NewResourceOperationScope(role, verb, resource), nil
-}
+//func ParseResourceOperationScope(s string) (*ResourceOperationScope, error) {
+//	parts := strings.Split(s, ":")
+//	if len(parts) != 3 {
+//		return nil, errors.New(
+//			"Invalid AuthZResourceType Operation Scope string. Must be in format `role:operation:resource`",
+//		)
+//	}
+//
+//	var role = AuthZUserRole(parts[0])
+//	if !role.IsValid() {
+//		return nil, &InvalidAuthZUserRoleError{}
+//	}
+//
+//	var verb = ResourceOperation(parts[1])
+//	if !verb.IsValid() {
+//		return nil, &InvalidResourceOperationError{}
+//	}
+//
+//	var resource = NewAuthZResourceType(parts[2])
+//
+//	return NewResourceOperationScope(role, verb, resource), nil
+//}

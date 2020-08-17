@@ -13,7 +13,7 @@ func TestPGClientRepo(t *testing.T) {
 
 	sqlxDB, closeDB := SetUpDB(t)
 	defer closeDB(t, sqlxDB)
-	clientRepo, _ := SetUpClientRepo(t, sqlxDB)
+	clientRepo, _ := SetUpAuthZClientRepo(t, sqlxDB)
 
 	publicClient, err := resources.NewClient("telnyx.com", true, true)
 	if err != nil {
@@ -41,7 +41,7 @@ func TestPGClientRepo(t *testing.T) {
 	})
 }
 
-func assertClient(a *assert.Assertions, want, got *resources.Client) {
+func assertClient(a *assert.Assertions, want, got *resources.AuthZClient) {
 	a.Equal(
 		want, got, "expected equivalent structs, want: %q, got: %q", want, got,
 	)

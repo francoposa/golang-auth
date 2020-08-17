@@ -14,10 +14,9 @@ func TestPGAuthNUserRepo(t *testing.T) {
 
 	sqlxDB, closeDB := SetUpDB(t)
 	defer closeDB(t, sqlxDB)
-	authNRoleRepo, _ := SetUpAuthNRoleRepo(t, sqlxDB)
-	authNUserRepo, users := SetUpAuthNUserRepo(t, sqlxDB, authNRoleRepo)
+	authNUserRepo, _ := SetUpAuthNUserRepo(t, sqlxDB)
 
-	AuthNUser := resources.NewAuthNUser("suki", "pink2000@honda.com", users[0].Role)
+	AuthNUser := resources.NewAuthNUser("suki", "pink2000@honda.com")
 
 	t.Run("create authn user", func(t *testing.T) {
 		createdAuthNUser, _ := authNUserRepo.Create(AuthNUser, "suki_pass")

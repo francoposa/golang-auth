@@ -6,10 +6,9 @@ type AuthNUser struct {
 	ID       uuid.UUID
 	Username string
 	Email    string
-	Role     *AuthNRole
 }
 
-func NewAuthNUser(username, email string, role *AuthNRole) *AuthNUser {
+func NewAuthNUser(username, email string) *AuthNUser {
 	id := uuid.New()
-	return &AuthNUser{ID: id, Username: username, Email: email, Role: role}
+	return &AuthNUser{ID: id, Username: username, Email: email}
 }

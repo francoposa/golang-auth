@@ -13,37 +13,37 @@ func TestPGAuthNRoleRepo(t *testing.T) {
 
 	sqlxDB, closeDB := SetUpDB(t)
 	defer closeDB(t, sqlxDB)
-	authNRoleRepo, _ := SetUpAuthNRoleRepo(t, sqlxDB)
+	authNRoleRepo, _ := SetUpAuthZRoleRepo(t, sqlxDB)
 
-	role := resources.NewAuthNRole("staff")
+	role := resources.NewAuthZRole("staff")
 
 	t.Run("create role", func(t *testing.T) {
 		createdRole, _ := authNRoleRepo.Create(role)
-		assertAuthNRole(assertions, role, createdRole)
+		assertAuthZRole(assertions, role, createdRole)
 	})
 
 	t.Run("create already existing role - error", func(t *testing.T) {
 		alreadyCreatedRole, err := authNRoleRepo.Create(role)
 		assertions.Nil(alreadyCreatedRole)
-		assertions.IsType(repos.AuthNRoleNameAlreadyExistsError{}, err)
+		assertions.IsType(repos.AuthZRoleNameAlreadyExistsError{}, err)
 	})
 
 	t.Run("get role", func(t *testing.T) {
-		retrievedRole, err := authNRoleRepo.GetByName(role.RoleName)
+		retrievedRole, err := authNRoleRepo.GetByName(role.Name)
 		if err != nil {
 			t.Error(err)
 		}
-		assertAuthNRole(assertions, role, retrievedRole)
+		assertAuthZRole(assertions, role, retrievedRole)
 	})
 
 	t.Run("get nonexistent role - error", func(t *testing.T) {
 		nonexistentRole, err := authNRoleRepo.GetByName("xxx")
 		assertions.Nil(nonexistentRole, "expected nil struct, got: %q", nonexistentRole)
-		assertions.IsType(repos.AuthNRoleNameNotFoundError{}, err)
+		assertions.IsType(repos.AuthZRoleNameNotFoundError{}, err)
 	})
 }
 
-func assertAuthNRole(a *assert.Assertions, want, got *resources.AuthNRole) {
+func assertAuthZRole(a *assert.Assertions, want, got *resources.AuthZRole) {
 	a.Equal(
 		want, got, "expected equivalent structs, want: %q, got: %q", want, got,
 	)

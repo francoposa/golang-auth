@@ -69,7 +69,7 @@ func SetUpDB(t *testing.T) (*sqlx.DB, func(t *testing.T, sqlxDB *sqlx.DB)) {
 func TearDownDB(t *testing.T, sqlxDB *sqlx.DB) {
 	t.Helper()
 
-	// Extract test DB Resource
+	// Extract test DB AuthZResourceType
 	var testDBName string
 	row := sqlxDB.QueryRowx(`SELECT current_catalog;`)
 	err := row.Scan(&testDBName)
@@ -111,24 +111,15 @@ func migrateUp(t *testing.T, db *sql.DB) {
 	}
 }
 
-func SetUpAuthNUserRepo(t *testing.T, sqlxDB *sqlx.DB, authNRoleRepo repos.AuthNRoleRepo) (repos.AuthNUserRepo, []*resources.AuthNUser) {
+func SetUpAuthNUserRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthNUserRepo, []*resources.AuthNUser) {
 	t.Helper()
 
-	adminRole, err := authNRoleRepo.GetByName("admin")
-	if err != nil {
-		panic(err)
-	}
-	userRole, err := authNRoleRepo.GetByName("user")
-	if err != nil {
-		panic(err)
-	}
-
-	authNUserRepo := NewPGAuthNUserRepo(sqlxDB, crypto.NewDefaultArgon2PassHasher(), authNRoleRepo)
+	authNUserRepo := NewPGAuthNUserRepo(sqlxDB, crypto.NewDefaultArgon2PassHasher())
 
 	users := []*resources.AuthNUser{
-		resources.NewAuthNUser("domtoretto", "americanmuscle@fastnfurious.com", adminRole),
-		resources.NewAuthNUser("brian", "importtuners@fastnfurious.com", adminRole),
-		resources.NewAuthNUser("roman", "ejectoseat@fastnfurious.com", userRole),
+		resources.NewAuthNUser("domtoretto", "americanmuscle@fastnfurious.com"),
+		resources.NewAuthNUser("brian", "importtuners@fastnfurious.com"),
+		resources.NewAuthNUser("roman", "ejectoseat@fastnfurious.com"),
 	}
 
 	for _, user := range users {
@@ -140,56 +131,55 @@ func SetUpAuthNUserRepo(t *testing.T, sqlxDB *sqlx.DB, authNRoleRepo repos.AuthN
 	return authNUserRepo, users
 }
 
-func SetUpAuthNRoleRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthNRoleRepo, []*resources.AuthNRole) {
+func SetUpAuthZRoleRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthZRoleRepo, []*resources.AuthZRole) {
 	t.Helper()
 
-	authNRoleRepo := NewPGAuthNRoleRepo(sqlxDB)
+	repo := NewPGAuthZRoleRepo(sqlxDB)
 
-	roles := []*resources.AuthNRole{
-		resources.NewAuthNRole("admin"),
-		resources.NewAuthNRole("user"),
+	roles := []*resources.AuthZRole{
+		resources.NewAuthZRole("admin"),
+		resources.NewAuthZRole("user"),
 	}
 
 	for _, role := range roles {
-		_, err := authNRoleRepo.Create(role)
+		_, err := repo.Create(role)
 		if err != nil {
 			panic(err)
 		}
 	}
-	return authNRoleRepo, roles
+	return repo, roles
 }
 
-func SetUpResourceRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.ResourceRepo, []*resources.Resource) {
+func SetUpAuthZResourceRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.ResourceRepo, []*resources.AuthZResourceType) {
 	t.Helper()
 
-	resourceRepo := NewPGResourceRepo(sqlxDB)
+	repo := NewPGAuthZResourceTypeRepo(sqlxDB)
 
-	resources := []*resources.Resource{
-		resources.NewResource("user"),
-		resources.NewResource("user.account"),
-		resources.NewResource("user.profile"),
+	resourceTypes := []*resources.AuthZResourceType{
+		resources.NewAuthZResourceType("user", "ExampleCom User entity"),
+		resources.NewAuthZResourceType("profile", "ExampleCom User Profile entity"),
 	}
 
-	for _, resource := range resources {
-		_, err := resourceRepo.Create(resource)
+	for _, resourceType := range resourceTypes {
+		_, err := repo.Create(resourceType)
 		if err != nil {
 			panic(err)
 		}
 	}
-	return resourceRepo, resources
+	return repo, resourceTypes
 }
 
-func SetUpClientRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.ClientRepo, []*resources.Client) {
+func SetUpAuthZClientRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthZClientRepo, []*resources.AuthZClient) {
 	t.Helper()
 
-	clientRepo := pgClientRepo{db: sqlxDB}
-	clients := []*resources.Client{}
+	repo := pgAuthZClientRepo{db: sqlxDB}
+	clients := []*resources.AuthZClient{}
 
 	for _, client := range clients {
-		_, err := clientRepo.Create(client)
+		_, err := repo.Create(client)
 		if err != nil {
 			panic(err)
 		}
 	}
-	return &clientRepo, clients
+	return &repo, clients
 }

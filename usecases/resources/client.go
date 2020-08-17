@@ -1,18 +1,19 @@
 package resources
 
 import (
-	"github.com/google/uuid"
 	"net/url"
+
+	"github.com/google/uuid"
 )
 
 type ClientRequiresRedirectURIError struct{}
 
 func (e *ClientRequiresRedirectURIError) Error() string {
-	return "Client Registration Requires Redirect URI: RFC 6749 Section 3.1.2.2"
+	return "AuthZClient Registration Requires Redirect URI: RFC 6749 Section 3.1.2.2"
 }
 
-// Client represents an authorization client as defined in RFC 6749 Section 1.1 - Roles
-type Client struct {
+// AuthZClient represents an authorization client as defined in RFC 6749 Section 1.1 - Roles
+type AuthZClient struct {
 	ID          uuid.UUID
 	Secret      *uuid.UUID
 	RedirectURI *url.URL
@@ -20,8 +21,8 @@ type Client struct {
 	FirstParty  bool
 }
 
-// Create a Client consistent with RFC 6749 Section 2 - Client Registration
-func NewClient(redirectURI string, public bool, firstParty bool) (*Client, error) {
+// Create a AuthZClient consistent with RFC 6749 Section 2 - AuthZClient Registration
+func NewClient(redirectURI string, public bool, firstParty bool) (*AuthZClient, error) {
 
 	// Require clients to register a Redirect URI as specified in
 	// RFC 6749 Section 3.1.2.2 - Redirection Endpoint Registration Requirements
@@ -47,7 +48,7 @@ func NewClient(redirectURI string, public bool, firstParty bool) (*Client, error
 		}
 	}
 
-	// We will not issue public clients (as defined in RFC 5749 Section 2.1 - Client Types)
+	// We will not issue public clients (as defined in RFC 5749 Section 2.1 - AuthZClient Types)
 	// a secret. Denying public clients a secret is not specifically required by
 	// the RFC, but not issuing a secret is a good way to avoid leaking one
 	var secret *uuid.UUID
@@ -59,7 +60,7 @@ func NewClient(redirectURI string, public bool, firstParty bool) (*Client, error
 	}
 
 	id := uuid.New()
-	return &Client{
+	return &AuthZClient{
 		ID:          id,
 		Secret:      secret,
 		RedirectURI: uri,
