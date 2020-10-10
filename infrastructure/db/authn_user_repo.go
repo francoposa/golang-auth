@@ -60,7 +60,7 @@ func (r *pgAuthNUserRepo) Create(user *resources.AuthNUser, password string) (*r
 	}, nil
 }
 
-var selectAuthNUserByUsernameStatement = `
+const selectAuthNUserByUsernameStatement = `
 SELECT id, username, email
 FROM authn_user
 WHERE username=$1
@@ -90,7 +90,7 @@ func (r *pgAuthNUserRepo) Get(username string) (*resources.AuthNUser, error) {
 	}, nil
 }
 
-var selectAuthNUserByUsernameForPasswordVerificationStatement = `
+const selectAuthNUserByUsernameForPasswordVerificationStatement = `
 SELECT id, username, email, password
 FROM authn_user
 WHERE username=$1

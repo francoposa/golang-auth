@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 
 	"golang-auth/usecases/repos"
@@ -25,14 +26,6 @@ func NewLoginHandler(
 }
 
 func (h *LoginHandler) Get(w http.ResponseWriter, r *http.Request) {
-
 	err := h.templateRenderer.RenderTemplate(w, h.loginTemplateName, "")
-
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	} else {
-		w.WriteHeader(http.StatusOK)
-	}
-
+	fmt.Println(err)
 }

@@ -1,12 +1,13 @@
 package db
 
 import (
-	"golang-auth/usecases/repos"
-	"golang-auth/usecases/resources"
 	"net/url"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+
+	"golang-auth/usecases/repos"
+	"golang-auth/usecases/resources"
 )
 
 type pgClientModel struct {
