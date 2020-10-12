@@ -71,7 +71,7 @@ to quickly create a Cobra application.`,
 		authNUserRepo := db.NewPGAuthNUserRepo(sqlxDB, hasher)
 		authNUserHandler := server.NewAuthNUserHandler(authNUserRepo)
 
-		loginHandler := server.NewLoginHandler(authNUserRepo, templateRenderer, "login.gohtml")
+		authNWebHandler := server.NewAuthNWebHandler(templateRenderer, "sign-in.gohtml", "sign-up.gohtml")
 
 		router := mux.NewRouter()
 		// Routing to FileServer handler for static web assets
@@ -85,7 +85,8 @@ to quickly create a Cobra application.`,
 		router.PathPrefix(staticRoute).Handler(http.StripPrefix(staticRoute, http.FileServer(httpStaticAssetsDir)))
 
 		// Routing to HTML Template and API handlers
-		router.HandleFunc("/login", loginHandler.Get).Methods("GET")
+		router.HandleFunc("/login", authNWebHandler.GetLogin).Methods("GET")
+		router.HandleFunc("/register", authNWebHandler.GetRegister).Methods("GET")
 		router.HandleFunc("/login", authNUserHandler.Authenticate).Methods("POST")
 
 		handler := cors.Default().Handler(router)
