@@ -30,8 +30,7 @@ func (h *AuthNUserHandler) Authenticate(w http.ResponseWriter, r *http.Request) 
 	}
 
 	verified, err := h.repo.Verify(postedUserAuth.Username, postedUserAuth.Password)
-	// Handler AuthNUserNotFound
-	if errors.Is(err, repos.AuthNUsernameNotFoundError{Username: postedUserAuth.Username}) {
+	if errors.Is(err, repos.AuthNUserNotFoundError{}) {
 		verified = false
 	} else if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -43,8 +42,6 @@ func (h *AuthNUserHandler) Authenticate(w http.ResponseWriter, r *http.Request) 
 		body := map[string]string{"error_message": "Username or Password is incorrect"}
 		json.NewEncoder(w).Encode(body)
 		return
-	} else {
-		w.WriteHeader(http.StatusOK)
 	}
-
+	w.WriteHeader(http.StatusOK)
 }

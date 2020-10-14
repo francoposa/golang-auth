@@ -1,6 +1,8 @@
 package db
 
 import (
+	"database/sql"
+	"errors"
 	"log"
 
 	"github.com/google/uuid"
@@ -21,7 +23,7 @@ func NewPGAuthNUserRepo(db *sqlx.DB, hasher usecases.Hasher) repos.AuthNUserRepo
 	return &pgAuthNUserRepo{db: db, hasher: hasher}
 }
 
-var insertAuthNUserStatement = `
+var insertAuthNUser = `
 INSERT INTO authn_user (id, username, email, password) 
 VALUES ($1, $2, $3, $4)
 RETURNING id, username, email
@@ -39,15 +41,17 @@ func (r *pgAuthNUserRepo) Create(user *resources.AuthNUser, password string) (*r
 	var email string
 
 	err = r.db.QueryRowx(
-		insertAuthNUserStatement,
+		insertAuthNUser,
 		user.ID,
 		user.Username,
 		user.Email,
 		hashedPassword,
 	).Scan(&id, &username, &email)
-	if err != nil {
-		if err, ok := err.(*pq.Error); ok && err.Code == "23505" {
-			key, value := GetAlreadyExistsErrorKeyValue(err)
+
+	var pqError *pq.Error
+	if errors.As(err, &pqError) {
+		if pqError.Code == "23505" {
+			key, value := GetAlreadyExistsErrorKeyValue(pqError)
 			return nil, repos.AuthNUserAlreadyExistsError{Field: key, Value: value}
 		}
 		log.Print(err)
@@ -61,7 +65,7 @@ func (r *pgAuthNUserRepo) Create(user *resources.AuthNUser, password string) (*r
 	}, nil
 }
 
-const selectAuthNUserByUsernameStatement = `
+const selectAuthNUserByUsername = `
 SELECT id, username, email
 FROM authn_user
 WHERE username=$1
@@ -71,14 +75,17 @@ func (r *pgAuthNUserRepo) Get(username string) (*resources.AuthNUser, error) {
 	var id uuid.UUID
 	var email string
 
-	err := r.db.QueryRowx(
-		selectAuthNUserByUsernameStatement,
+	err := r.db.QueryRow(
+		selectAuthNUserByUsername,
 		username,
 	).Scan(&id, &username, &email)
 
 	if err != nil {
-		if err.Error() == "sql: no rows in result set" {
-			return nil, repos.AuthNUsernameNotFoundError{username}
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, repos.AuthNUserNotFoundError{
+				Field: "username",
+				Value: username,
+			}
 		}
 		log.Print(err)
 		return nil, err
@@ -91,7 +98,7 @@ func (r *pgAuthNUserRepo) Get(username string) (*resources.AuthNUser, error) {
 	}, nil
 }
 
-const selectAuthNUserByUsernameForPasswordVerificationStatement = `
+const selectAuthNUserByUsernameWithPassword = `
 SELECT id, username, email, password
 FROM authn_user
 WHERE username=$1
@@ -103,13 +110,16 @@ func (r *pgAuthNUserRepo) Verify(username string, password string) (bool, error)
 	var hashedPassword string
 
 	err := r.db.QueryRowx(
-		selectAuthNUserByUsernameForPasswordVerificationStatement,
+		selectAuthNUserByUsernameWithPassword,
 		username,
 	).Scan(&id, &username, &email, &hashedPassword)
 
 	if err != nil {
-		if err.Error() == "sql: no rows in result set" {
-			return false, repos.AuthNUsernameNotFoundError{username}
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, repos.AuthNUserNotFoundError{
+				Field: "username",
+				Value: username,
+			}
 		}
 		log.Print(err)
 		return false, err

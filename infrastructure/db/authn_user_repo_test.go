@@ -20,7 +20,7 @@ func TestPGAuthNUserRepo(t *testing.T) {
 
 	t.Run("create authn user", func(t *testing.T) {
 		createdAuthNUser, _ := authNUserRepo.Create(AuthNUser, "suki_pass")
-		assertAuthNUser(assertions, AuthNUser, createdAuthNUser)
+		assertions.Equal(AuthNUser, createdAuthNUser)
 	})
 
 	t.Run("create already existing user - error", func(t *testing.T) {
@@ -60,29 +60,30 @@ func TestPGAuthNUserRepo(t *testing.T) {
 
 	t.Run("get authn user", func(t *testing.T) {
 		retrievedAuthNUser, err := authNUserRepo.Get(AuthNUser.Username)
-		if err != nil {
-			t.Error(err)
-		}
-		assertAuthNUser(assertions, AuthNUser, retrievedAuthNUser)
+		assertions.Nil(err)
+		assertions.Equal(AuthNUser, retrievedAuthNUser)
 	})
 
 	t.Run("get nonexistent authn user - error", func(t *testing.T) {
 		nonexistentAuthNUser, err := authNUserRepo.Get("xxx")
 		assertions.Nil(nonexistentAuthNUser, "expected nil struct, got: %q", nonexistentAuthNUser)
-		assertions.IsType(repos.AuthNUsernameNotFoundError{}, err)
+		assertions.IsType(repos.AuthNUserNotFoundError{}, err)
+		assertions.Equal(
+			err,
+			repos.AuthNUserNotFoundError{
+				Field: "username",
+				Value: "xxx",
+			},
+		)
 	})
 
 	t.Run("verify authn user password", func(t *testing.T) {
 		verified, err := authNUserRepo.Verify(AuthNUser.Username, "suki_pass")
-		if err != nil {
-			t.Error(err)
-		}
+		assertions.Nil(err)
 		assertions.True(verified, "correct password was not verified")
 
 		verified, err = authNUserRepo.Verify(AuthNUser.Username, "Suki_pass")
-		if err != nil {
-			t.Error(err)
-		}
+		assertions.Nil(err)
 		assertions.False(verified, "incorrect password was verified")
 	})
 }
