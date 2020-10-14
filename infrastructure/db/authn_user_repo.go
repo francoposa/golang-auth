@@ -47,7 +47,8 @@ func (r *pgAuthNUserRepo) Create(user *resources.AuthNUser, password string) (*r
 	).Scan(&id, &username, &email)
 	if err != nil {
 		if err, ok := err.(*pq.Error); ok && err.Code == "23505" {
-			return nil, repos.AuthNUsernameAlreadyExistsError{Username: username}
+			key, value := GetAlreadyExistsErrorKeyValue(err)
+			return nil, repos.AuthNUserAlreadyExistsError{Field: key, Value: value}
 		}
 		log.Print(err)
 		return nil, err
@@ -77,7 +78,7 @@ func (r *pgAuthNUserRepo) Get(username string) (*resources.AuthNUser, error) {
 
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
-			return nil, repos.AuthNUserUsernameNotFoundError{username}
+			return nil, repos.AuthNUsernameNotFoundError{username}
 		}
 		log.Print(err)
 		return nil, err
@@ -108,7 +109,7 @@ func (r *pgAuthNUserRepo) Verify(username string, password string) (bool, error)
 
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
-			return false, repos.AuthNUserUsernameNotFoundError{username}
+			return false, repos.AuthNUsernameNotFoundError{username}
 		}
 		log.Print(err)
 		return false, err

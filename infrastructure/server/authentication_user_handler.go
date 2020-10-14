@@ -31,7 +31,7 @@ func (h *AuthNUserHandler) Authenticate(w http.ResponseWriter, r *http.Request) 
 
 	verified, err := h.repo.Verify(postedUserAuth.Username, postedUserAuth.Password)
 	// Handler AuthNUserNotFound
-	if errors.Is(err, repos.AuthNUserUsernameNotFoundError{Username: postedUserAuth.Username}) {
+	if errors.Is(err, repos.AuthNUsernameNotFoundError{Username: postedUserAuth.Username}) {
 		verified = false
 	} else if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

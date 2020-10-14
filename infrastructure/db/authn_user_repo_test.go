@@ -16,7 +16,7 @@ func TestPGAuthNUserRepo(t *testing.T) {
 	defer closeDB(t, sqlxDB)
 	authNUserRepo, _ := SetUpAuthNUserRepo(t, sqlxDB)
 
-	AuthNUser := resources.NewAuthNUser("suki", "pink2000@honda.com")
+	AuthNUser := resources.NewAuthNUser("suki", "pinkS2000@honda.com")
 
 	t.Run("create authn user", func(t *testing.T) {
 		createdAuthNUser, _ := authNUserRepo.Create(AuthNUser, "suki_pass")
@@ -24,9 +24,38 @@ func TestPGAuthNUserRepo(t *testing.T) {
 	})
 
 	t.Run("create already existing user - error", func(t *testing.T) {
-		alreadyCreatedAuthNUser, err := authNUserRepo.Create(AuthNUser, "suki_pass")
-		assertions.Nil(alreadyCreatedAuthNUser, "expected nil struct, got: %q", alreadyCreatedAuthNUser)
-		assertions.IsType(repos.AuthNUsernameAlreadyExistsError{}, err)
+		userWithExistingID := &resources.AuthNUser{ID: AuthNUser.ID}
+		retrievedUserWithExistingID, err := authNUserRepo.Create(userWithExistingID, "suki_pass")
+		assertions.Nil(retrievedUserWithExistingID)
+		assertions.Equal(
+			err,
+			repos.AuthNUserAlreadyExistsError{
+				Field: "id",
+				Value: userWithExistingID.ID.String(),
+			},
+		)
+
+		userWithExistingUsername := &resources.AuthNUser{Username: AuthNUser.Username}
+		retrievedUserWithExistingUsername, err := authNUserRepo.Create(userWithExistingUsername, "suki_pass")
+		assertions.Nil(retrievedUserWithExistingUsername)
+		assertions.Equal(
+			err,
+			repos.AuthNUserAlreadyExistsError{
+				Field: "username",
+				Value: userWithExistingUsername.Username,
+			},
+		)
+
+		userWithExistingEmail := &resources.AuthNUser{Email: AuthNUser.Email}
+		retrievedUserWithExistingEmail, err := authNUserRepo.Create(userWithExistingEmail, "suki_pass")
+		assertions.Nil(retrievedUserWithExistingEmail)
+		assertions.Equal(
+			err,
+			repos.AuthNUserAlreadyExistsError{
+				Field: "email",
+				Value: userWithExistingEmail.Email,
+			},
+		)
 	})
 
 	t.Run("get authn user", func(t *testing.T) {
@@ -40,7 +69,7 @@ func TestPGAuthNUserRepo(t *testing.T) {
 	t.Run("get nonexistent authn user - error", func(t *testing.T) {
 		nonexistentAuthNUser, err := authNUserRepo.Get("xxx")
 		assertions.Nil(nonexistentAuthNUser, "expected nil struct, got: %q", nonexistentAuthNUser)
-		assertions.IsType(repos.AuthNUserUsernameNotFoundError{}, err)
+		assertions.IsType(repos.AuthNUsernameNotFoundError{}, err)
 	})
 
 	t.Run("verify authn user password", func(t *testing.T) {

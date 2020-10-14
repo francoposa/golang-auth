@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS authn_user
 (
     id        UUID NOT NULL PRIMARY KEY,
     username  TEXT NOT NULL UNIQUE,
-    email     TEXT NOT NULL,
+    email     TEXT NOT NULL UNIQUE,
     password  TEXT NOT NULL
 );
 

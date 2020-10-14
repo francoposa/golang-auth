@@ -11,18 +11,19 @@ type AuthNUserRepo interface {
 	Verify(username string, password string) (bool, error)
 }
 
-type AuthNUserUsernameNotFoundError struct {
+type AuthNUsernameNotFoundError struct {
 	Username string
 }
 
-func (e AuthNUserUsernameNotFoundError) Error() string {
+func (e AuthNUsernameNotFoundError) Error() string {
 	return fmt.Sprintf("No AuthNUser found with username %s", e.Username)
 }
 
-type AuthNUsernameAlreadyExistsError struct {
-	Username string
+type AuthNUserAlreadyExistsError struct {
+	Field string
+	Value string
 }
 
-func (e AuthNUsernameAlreadyExistsError) Error() string {
-	return fmt.Sprintf("AuthNUser already exists with username %s", e.Username)
+func (e AuthNUserAlreadyExistsError) Error() string {
+	return fmt.Sprintf("AuthNUser already exists with %s=%s", e.Field, e.Value)
 }

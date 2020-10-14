@@ -2,10 +2,12 @@ package db
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/jmoiron/sqlx"
 	// Makes postgres driver available to Golang's database/sql package
 	// https://www.calhoun.io/why-we-import-sql-drivers-with-the-blank-identifier/
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 )
 
@@ -51,4 +53,11 @@ func BuildConnectionString(pc PostgresConfig) string {
 func MustConnect(pgConfig PostgresConfig) *sqlx.DB {
 	pgURL := BuildConnectionString(pgConfig)
 	return sqlx.MustConnect("postgres", pgURL)
+}
+
+var pqErrorDetailRegex = regexp.MustCompile(`Key\s\((?P<Key>[a-zA-Z0-9_]*)\)=\((?P<Value>.*)\).*`)
+
+func GetAlreadyExistsErrorKeyValue(err *pq.Error) (string, string) {
+	matches := pqErrorDetailRegex.FindStringSubmatch(err.Detail)
+	return matches[1], matches[2]
 }
