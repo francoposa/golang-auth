@@ -117,9 +117,18 @@ func SetUpAuthNUserRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthNUserRepo, []*
 	authNUserRepo := NewPGAuthNUserRepo(sqlxDB, crypto.NewDefaultArgon2PassHasher())
 
 	users := []*resources.AuthNUser{
-		resources.NewAuthNUser("domtoretto", "americanmuscle@fastnfurious.com"),
-		resources.NewAuthNUser("brian", "importtuners@fastnfurious.com"),
-		resources.NewAuthNUser("roman", "ejectoseat@fastnfurious.com"),
+		resources.NewAuthNUser(
+			"domtoretto",
+			resources.EmailAddress{Email: "americanmuscle@fastnfurious.com"},
+		),
+		resources.NewAuthNUser(
+			"brian",
+			resources.EmailAddress{Email: "importtuners@fastnfurious.com"},
+		),
+		resources.NewAuthNUser(
+			"roman",
+			resources.EmailAddress{Email: "ejectoseat@fastnfurious.com"},
+		),
 	}
 
 	for _, user := range users {

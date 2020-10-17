@@ -16,10 +16,13 @@ func TestPGAuthNUserRepo(t *testing.T) {
 	defer closeDB(t, sqlxDB)
 	authNUserRepo, _ := SetUpAuthNUserRepo(t, sqlxDB)
 
-	AuthNUser := resources.NewAuthNUser("suki", "pinkS2000@honda.com")
+	AuthNUser := resources.NewAuthNUser(
+		"suki", resources.EmailAddress{Email: "pinkS2000@honda.com"},
+	)
 
 	t.Run("create authn user", func(t *testing.T) {
-		createdAuthNUser, _ := authNUserRepo.Create(AuthNUser, "suki_pass")
+		createdAuthNUser, err := authNUserRepo.Create(AuthNUser, "suki_pass")
+		assertions.Nil(err)
 		assertions.Equal(AuthNUser, createdAuthNUser)
 	})
 
@@ -53,7 +56,7 @@ func TestPGAuthNUserRepo(t *testing.T) {
 			err,
 			repos.AuthNUserAlreadyExistsError{
 				Field: "email",
-				Value: userWithExistingEmail.Email,
+				Value: userWithExistingEmail.Email.String(),
 			},
 		)
 	})

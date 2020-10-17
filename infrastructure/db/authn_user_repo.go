@@ -32,7 +32,7 @@ RETURNING id, username, email
 func (r *pgAuthNUserRepo) Create(user *resources.AuthNUser, password string) (*resources.AuthNUser, error) {
 	hashedPassword, err := r.hasher.Hash(password)
 	if err != nil {
-		log.Print(err)
+		log.Println(err)
 		return nil, err
 	}
 
@@ -44,24 +44,26 @@ func (r *pgAuthNUserRepo) Create(user *resources.AuthNUser, password string) (*r
 		insertAuthNUser,
 		user.ID,
 		user.Username,
-		user.Email,
+		user.Email.String(),
 		hashedPassword,
 	).Scan(&id, &username, &email)
 
-	var pqError *pq.Error
-	if errors.As(err, &pqError) {
-		if pqError.Code == "23505" {
-			key, value := GetAlreadyExistsErrorKeyValue(pqError)
-			return nil, repos.AuthNUserAlreadyExistsError{Field: key, Value: value}
+	if err != nil {
+		var pqError *pq.Error
+		if errors.As(err, &pqError) {
+			if pqError.Code == "23505" {
+				key, value := GetAlreadyExistsErrorKeyValue(pqError)
+				return nil, repos.AuthNUserAlreadyExistsError{Field: key, Value: value}
+			}
 		}
-		log.Print(err)
+		log.Println(err)
 		return nil, err
 	}
 
 	return &resources.AuthNUser{
 		ID:       id,
 		Username: username,
-		Email:    email,
+		Email:    resources.EmailAddress{Email: email},
 	}, nil
 }
 
@@ -87,14 +89,14 @@ func (r *pgAuthNUserRepo) Get(username string) (*resources.AuthNUser, error) {
 				Value: username,
 			}
 		}
-		log.Print(err)
+		log.Println(err)
 		return nil, err
 	}
 
 	return &resources.AuthNUser{
 		ID:       id,
 		Username: username,
-		Email:    email,
+		Email:    resources.EmailAddress{Email: email},
 	}, nil
 }
 
@@ -121,7 +123,7 @@ func (r *pgAuthNUserRepo) Verify(username string, password string) (bool, error)
 				Value: username,
 			}
 		}
-		log.Print(err)
+		log.Println(err)
 		return false, err
 	}
 

@@ -14,8 +14,8 @@ $ go get -u github.com/pressly/goose/cmd/goose
 
 Create DBs
 ```
-$ psql -U postgres -c "CREATE DATABASE examplecom_auth;"
-$ psql -U postgres -c "CREATE DATABASE examplecom_auth_test;"
+psql -U postgres -c "CREATE DATABASE examplecom_auth;"
+psql -U postgres -c "CREATE DATABASE examplecom_auth_test;"
 ```
 
 
