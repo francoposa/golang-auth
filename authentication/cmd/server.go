@@ -18,9 +18,9 @@ import (
 	"golang-auth/authentication/infrastructure/db"
 )
 
-// authnserverCmd represents the authnserver command
-var authnserverCmd = &cobra.Command{
-	Use:   "authnserver",
+// serverCmd represents the server command
+var serverCmd = &cobra.Command{
+	Use:   "server",
 	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
@@ -85,15 +85,15 @@ to quickly create a Cobra application.`,
 }
 
 func init() {
-	rootCmd.AddCommand(authnserverCmd)
+	rootCmd.AddCommand(serverCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// authnserverCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// serverCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// authnserverCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// serverCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
