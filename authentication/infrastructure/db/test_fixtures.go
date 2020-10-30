@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"golang-auth/usecases/resources"
 	"log"
 	"math/rand"
 	"path/filepath"
@@ -18,7 +17,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/pressly/goose"
 
-	"golang-auth/usecases/repos"
+	"golang-auth/authentication/domain"
+	"golang-auth/authentication/infrastructure/crypto"
 )
 
 var testDBNameTemplate = `examplecom_auth_test_%d`
@@ -110,55 +110,31 @@ func migrateUp(t *testing.T, db *sql.DB) {
 	}
 }
 
-func SetUpAuthZRoleRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthZRoleRepo, []*resources.AuthZRole) {
+func SetUpAuthNUserRepo(t *testing.T, sqlxDB *sqlx.DB) (domain.AuthNUserRepo, []*domain.AuthNUser) {
 	t.Helper()
 
-	repo := NewPGAuthZRoleRepo(sqlxDB)
+	authNUserRepo := NewPGAuthNUserRepo(sqlxDB, crypto.NewDefaultArgon2PassHasher())
 
-	roles := []*resources.AuthZRole{
-		resources.NewAuthZRole("admin"),
-		resources.NewAuthZRole("user"),
+	users := []*domain.AuthNUser{
+		domain.NewAuthNUser(
+			"domtoretto",
+			domain.EmailAddress{Email: "americanmuscle@fastnfurious.com"},
+		),
+		domain.NewAuthNUser(
+			"brian",
+			domain.EmailAddress{Email: "importtuners@fastnfurious.com"},
+		),
+		domain.NewAuthNUser(
+			"roman",
+			domain.EmailAddress{Email: "ejectoseat@fastnfurious.com"},
+		),
 	}
 
-	for _, role := range roles {
-		_, err := repo.Create(role)
+	for _, user := range users {
+		_, err := authNUserRepo.Create(user, fmt.Sprintf("%s_pass", user.Username))
 		if err != nil {
 			panic(err)
 		}
 	}
-	return repo, roles
-}
-
-func SetUpAuthZResourceRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.ResourceRepo, []*resources.AuthZResourceType) {
-	t.Helper()
-
-	repo := NewPGAuthZResourceTypeRepo(sqlxDB)
-
-	resourceTypes := []*resources.AuthZResourceType{
-		resources.NewAuthZResourceType("user", "ExampleCom User entity"),
-		resources.NewAuthZResourceType("profile", "ExampleCom User Profile entity"),
-	}
-
-	for _, resourceType := range resourceTypes {
-		_, err := repo.Create(resourceType)
-		if err != nil {
-			panic(err)
-		}
-	}
-	return repo, resourceTypes
-}
-
-func SetUpAuthZClientRepo(t *testing.T, sqlxDB *sqlx.DB) (repos.AuthZClientRepo, []*resources.AuthZClient) {
-	t.Helper()
-
-	repo := pgAuthZClientRepo{db: sqlxDB}
-	clients := []*resources.AuthZClient{}
-
-	for _, client := range clients {
-		_, err := repo.Create(client)
-		if err != nil {
-			panic(err)
-		}
-	}
-	return &repo, clients
+	return authNUserRepo, users
 }

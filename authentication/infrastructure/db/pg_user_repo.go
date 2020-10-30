@@ -9,18 +9,16 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 
-	"golang-auth/usecases"
-	"golang-auth/usecases/repos"
-	"golang-auth/usecases/resources"
+	"golang-auth/authentication/domain"
 )
 
-type pgAuthNUserRepo struct {
+type PGAuthNUserRepo struct {
 	db     *sqlx.DB
-	hasher usecases.Hasher
+	hasher domain.Hasher
 }
 
-func NewPGAuthNUserRepo(db *sqlx.DB, hasher usecases.Hasher) repos.AuthNUserRepo {
-	return &pgAuthNUserRepo{db: db, hasher: hasher}
+func NewPGAuthNUserRepo(db *sqlx.DB, hasher domain.Hasher) *PGAuthNUserRepo {
+	return &PGAuthNUserRepo{db: db, hasher: hasher}
 }
 
 var insertAuthNUser = `
@@ -29,7 +27,7 @@ VALUES ($1, $2, $3, $4)
 RETURNING id, username, email
 `
 
-func (r *pgAuthNUserRepo) Create(user *resources.AuthNUser, password string) (*resources.AuthNUser, error) {
+func (r *PGAuthNUserRepo) Create(user *domain.AuthNUser, password string) (*domain.AuthNUser, error) {
 	hashedPassword, err := r.hasher.Hash(password)
 	if err != nil {
 		log.Println(err)
@@ -53,17 +51,17 @@ func (r *pgAuthNUserRepo) Create(user *resources.AuthNUser, password string) (*r
 		if errors.As(err, &pqError) {
 			if pqError.Code == "23505" {
 				key, value := GetAlreadyExistsErrorKeyValue(pqError)
-				return nil, repos.AuthNUserAlreadyExistsError{Field: key, Value: value}
+				return nil, domain.AuthNUserAlreadyExistsError{Field: key, Value: value}
 			}
 		}
 		log.Println(err)
 		return nil, err
 	}
 
-	return &resources.AuthNUser{
+	return &domain.AuthNUser{
 		ID:       id,
 		Username: username,
-		Email:    resources.EmailAddress{Email: email},
+		Email:    domain.EmailAddress{Email: email},
 	}, nil
 }
 
@@ -73,7 +71,7 @@ FROM authn_user
 WHERE username=$1
 `
 
-func (r *pgAuthNUserRepo) Get(username string) (*resources.AuthNUser, error) {
+func (r *PGAuthNUserRepo) Get(username string) (*domain.AuthNUser, error) {
 	var id uuid.UUID
 	var email string
 
@@ -84,7 +82,7 @@ func (r *pgAuthNUserRepo) Get(username string) (*resources.AuthNUser, error) {
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, repos.AuthNUserNotFoundError{
+			return nil, domain.AuthNUserNotFoundError{
 				Field: "username",
 				Value: username,
 			}
@@ -93,10 +91,10 @@ func (r *pgAuthNUserRepo) Get(username string) (*resources.AuthNUser, error) {
 		return nil, err
 	}
 
-	return &resources.AuthNUser{
+	return &domain.AuthNUser{
 		ID:       id,
 		Username: username,
-		Email:    resources.EmailAddress{Email: email},
+		Email:    domain.EmailAddress{Email: email},
 	}, nil
 }
 
@@ -106,7 +104,7 @@ FROM authn_user
 WHERE username=$1
 `
 
-func (r *pgAuthNUserRepo) Verify(username string, password string) (bool, error) {
+func (r *PGAuthNUserRepo) Verify(username string, password string) (bool, error) {
 	var id uuid.UUID
 	var email string
 	var hashedPassword string
@@ -118,7 +116,7 @@ func (r *pgAuthNUserRepo) Verify(username string, password string) (bool, error)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return false, repos.AuthNUserNotFoundError{
+			return false, domain.AuthNUserNotFoundError{
 				Field: "username",
 				Value: username,
 			}

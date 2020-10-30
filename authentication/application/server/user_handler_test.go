@@ -12,13 +12,12 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 
-	"golang-auth/infrastructure/db"
+	"golang-auth/authentication/infrastructure/db"
 )
 
 func setupTestAuthNUserHandler(t *testing.T, sqlxDB *sqlx.DB) *mux.Router {
 	t.Helper()
 
-	_, _ = db.SetUpAuthZRoleRepo(t, sqlxDB)
 	authNUserRepo, _ := db.SetUpAuthNUserRepo(t, sqlxDB)
 	authNUserHandler := AuthNUserHandler{repo: authNUserRepo}
 

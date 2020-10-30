@@ -5,8 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"golang-auth/usecases/repos"
-	"golang-auth/usecases/resources"
+	"golang-auth/authentication/domain"
 )
 
 func TestPGAuthNUserRepo(t *testing.T) {
@@ -16,8 +15,8 @@ func TestPGAuthNUserRepo(t *testing.T) {
 	defer closeDB(t, sqlxDB)
 	authNUserRepo, _ := SetUpAuthNUserRepo(t, sqlxDB)
 
-	AuthNUser := resources.NewAuthNUser(
-		"suki", resources.EmailAddress{Email: "pinkS2000@honda.com"},
+	AuthNUser := domain.NewAuthNUser(
+		"suki", domain.EmailAddress{Email: "pinkS2000@honda.com"},
 	)
 
 	t.Run("create authn user", func(t *testing.T) {
@@ -27,34 +26,34 @@ func TestPGAuthNUserRepo(t *testing.T) {
 	})
 
 	t.Run("create already existing user - error", func(t *testing.T) {
-		userWithExistingID := &resources.AuthNUser{ID: AuthNUser.ID}
+		userWithExistingID := &domain.AuthNUser{ID: AuthNUser.ID}
 		retrievedUserWithExistingID, err := authNUserRepo.Create(userWithExistingID, "suki_pass")
 		assertions.Nil(retrievedUserWithExistingID)
 		assertions.Equal(
 			err,
-			repos.AuthNUserAlreadyExistsError{
+			domain.AuthNUserAlreadyExistsError{
 				Field: "id",
 				Value: userWithExistingID.ID.String(),
 			},
 		)
 
-		userWithExistingUsername := &resources.AuthNUser{Username: AuthNUser.Username}
+		userWithExistingUsername := &domain.AuthNUser{Username: AuthNUser.Username}
 		retrievedUserWithExistingUsername, err := authNUserRepo.Create(userWithExistingUsername, "suki_pass")
 		assertions.Nil(retrievedUserWithExistingUsername)
 		assertions.Equal(
 			err,
-			repos.AuthNUserAlreadyExistsError{
+			domain.AuthNUserAlreadyExistsError{
 				Field: "username",
 				Value: userWithExistingUsername.Username,
 			},
 		)
 
-		userWithExistingEmail := &resources.AuthNUser{Email: AuthNUser.Email}
+		userWithExistingEmail := &domain.AuthNUser{Email: AuthNUser.Email}
 		retrievedUserWithExistingEmail, err := authNUserRepo.Create(userWithExistingEmail, "suki_pass")
 		assertions.Nil(retrievedUserWithExistingEmail)
 		assertions.Equal(
 			err,
-			repos.AuthNUserAlreadyExistsError{
+			domain.AuthNUserAlreadyExistsError{
 				Field: "email",
 				Value: userWithExistingEmail.Email.String(),
 			},
@@ -70,10 +69,10 @@ func TestPGAuthNUserRepo(t *testing.T) {
 	t.Run("get nonexistent authn user - error", func(t *testing.T) {
 		nonexistentAuthNUser, err := authNUserRepo.Get("xxx")
 		assertions.Nil(nonexistentAuthNUser, "expected nil struct, got: %q", nonexistentAuthNUser)
-		assertions.IsType(repos.AuthNUserNotFoundError{}, err)
+		assertions.IsType(domain.AuthNUserNotFoundError{}, err)
 		assertions.Equal(
 			err,
-			repos.AuthNUserNotFoundError{
+			domain.AuthNUserNotFoundError{
 				Field: "username",
 				Value: "xxx",
 			},
@@ -89,10 +88,4 @@ func TestPGAuthNUserRepo(t *testing.T) {
 		assertions.Nil(err)
 		assertions.False(verified, "incorrect password was verified")
 	})
-}
-
-func assertAuthNUser(a *assert.Assertions, want, got *resources.AuthNUser) {
-	a.Equal(
-		want, got, "expected equivalent structs, want: %q, got: %q", want, got,
-	)
 }

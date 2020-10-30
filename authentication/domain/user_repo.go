@@ -1,13 +1,12 @@
-package repos
+package domain
 
 import (
 	"fmt"
-	"golang-auth/usecases/resources"
 )
 
 type AuthNUserRepo interface {
-	Get(username string) (*resources.AuthNUser, error)
-	Create(user *resources.AuthNUser, password string) (*resources.AuthNUser, error)
+	Get(username string) (*AuthNUser, error)
+	Create(user *AuthNUser, password string) (*AuthNUser, error)
 	Verify(username string, password string) (bool, error)
 }
 

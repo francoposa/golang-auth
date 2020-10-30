@@ -1,4 +1,4 @@
-package usecases
+package domain
 
 type Hasher interface {
 	Hash(password string) (string, error)
