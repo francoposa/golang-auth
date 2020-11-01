@@ -27,8 +27,8 @@ func (h *AuthNUserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := domain.NewUser(httpUser.Username, httpUser.Email)
-	var usernameErr *domain.UsernameInvalidError
-	var emailErr *domain.EmailInvalidError
+	var usernameErr domain.UsernameInvalidError
+	var emailErr domain.EmailInvalidError
 	if errors.As(err, &usernameErr) || errors.As(err, &emailErr) {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		body := map[string]string{"error_message": err.Error()}
@@ -37,8 +37,8 @@ func (h *AuthNUserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	createdUser, err := h.repo.Create(user, httpUser.Password)
-	var passwordErr *domain.PasswordInvalidError
-	var existsErr *domain.UserAlreadyExistsError
+	var passwordErr domain.PasswordInvalidError
+	var existsErr domain.UserAlreadyExistsError
 	if errors.As(err, &passwordErr) || errors.As(err, &existsErr) {
 		w.WriteHeader(http.StatusConflict)
 		body := map[string]string{"error_message": err.Error()}

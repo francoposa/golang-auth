@@ -27,11 +27,11 @@ func NewUser(username, email string) (*User, error) {
 		strconv.Itoa(MinUsernameLen),
 		strconv.Itoa(MaxUsernameLen),
 	) {
-		return nil, &UsernameInvalidError{}
+		return nil, UsernameInvalidError{}
 	}
 
 	if !validator.IsEmail(email) {
-		return nil, &EmailInvalidError{Email: email}
+		return nil, EmailInvalidError{Email: email}
 	}
 
 	return &User{

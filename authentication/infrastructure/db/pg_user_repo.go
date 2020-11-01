@@ -35,7 +35,7 @@ func (r *PGAuthNUserRepo) Create(user *domain.User, password string) (*domain.Us
 		strconv.Itoa(domain.MinPasswordLen),
 		strconv.Itoa(domain.MaxPasswordLen),
 	) {
-		return nil, &domain.PasswordInvalidError{}
+		return nil, domain.PasswordInvalidError{}
 	}
 
 	hashedPassword, err := r.hasher.Hash(password)
@@ -61,7 +61,7 @@ func (r *PGAuthNUserRepo) Create(user *domain.User, password string) (*domain.Us
 		if errors.As(err, &pqError) {
 			if pqError.Code == "23505" {
 				key, value := GetAlreadyExistsErrorKeyValue(pqError)
-				return nil, &domain.UserAlreadyExistsError{Field: key, Value: value}
+				return nil, domain.UserAlreadyExistsError{Field: key, Value: value}
 			}
 		}
 		log.Println(err)
