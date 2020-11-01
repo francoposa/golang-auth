@@ -36,7 +36,7 @@ func TestAuthNUserHandler_Authenticate(t *testing.T) {
 
 	t.Run("HTTP 200 for correct username and password", func(t *testing.T) {
 		response := httptest.NewRecorder()
-		body := map[string]string{"username": "domtoretto", "password": "domtoretto_pass"}
+		body := map[string]string{"username": "domtoretto", "password": "domtoretto_password12345"}
 		AuthNUserHandler.ServeHTTP(response, newPOSTUserAuthenticateRequest(t, body))
 
 		assertions.Equal(200, response.Code)
@@ -49,7 +49,7 @@ func TestAuthNUserHandler_Authenticate(t *testing.T) {
 
 		assertions.Equal(401, response.Code)
 
-		body = map[string]string{"username": "domtoretto_badusername", "password": "domtoretto_pass"}
+		body = map[string]string{"username": "domtoretto_badusername", "password": "domtoretto_password12345"}
 		AuthNUserHandler.ServeHTTP(response, newPOSTUserAuthenticateRequest(t, body))
 
 		assertions.Equal(401, response.Code)

@@ -48,7 +48,7 @@ to quickly create a Cobra application.`,
 		hasher := crypto.NewDefaultArgon2PassHasher()
 
 		authNUserRepo := db.NewPGAuthNUserRepo(sqlxDB, hasher)
-		authNUserHandler := server.NewAuthNUserHandler(authNUserRepo)
+		authNUserHandler := server.NewUserHandler(authNUserRepo)
 
 		authNWebHandler := server.NewAuthNWebHandler(templateRenderer, "sign-in.gohtml", "sign-up.gohtml")
 
@@ -67,6 +67,7 @@ to quickly create a Cobra application.`,
 		router.HandleFunc("/login", authNWebHandler.GetLogin).Methods("GET")
 		router.HandleFunc("/register", authNWebHandler.GetRegister).Methods("GET")
 		router.HandleFunc("/login", authNUserHandler.Authenticate).Methods("POST")
+		router.HandleFunc("/register", authNUserHandler.Create).Methods("POST")
 
 		handler := cors.Default().Handler(router)
 		handler = handlers.LoggingHandler(os.Stdout, handler)

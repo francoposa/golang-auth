@@ -4,26 +4,26 @@ import (
 	"fmt"
 )
 
-type AuthNUserRepo interface {
-	Get(username string) (*AuthNUser, error)
-	Create(user *AuthNUser, password string) (*AuthNUser, error)
+type UserRepo interface {
+	Get(username string) (*User, error)
+	Create(user *User, password string) (*User, error)
 	Verify(username string, password string) (bool, error)
 }
 
-type AuthNUserNotFoundError struct {
+type UserNotFoundError struct {
 	Field string
 	Value string
 }
 
-func (e AuthNUserNotFoundError) Error() string {
-	return fmt.Sprintf("No AuthNUser found with exists with %s=%s", e.Field, e.Value)
+func (e UserNotFoundError) Error() string {
+	return fmt.Sprintf("No User found with exists with %s=%s", e.Field, e.Value)
 }
 
-type AuthNUserAlreadyExistsError struct {
+type UserAlreadyExistsError struct {
 	Field string
 	Value string
 }
 
-func (e AuthNUserAlreadyExistsError) Error() string {
-	return fmt.Sprintf("AuthNUser already exists with %s=%s", e.Field, e.Value)
+func (e UserAlreadyExistsError) Error() string {
+	return fmt.Sprintf("User already exists with %s=%s", e.Field, e.Value)
 }

@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"log"
+	"strconv"
 
+	validator "github.com/asaskevich/govalidator"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
@@ -27,7 +29,15 @@ VALUES ($1, $2, $3, $4)
 RETURNING id, username, email
 `
 
-func (r *PGAuthNUserRepo) Create(user *domain.AuthNUser, password string) (*domain.AuthNUser, error) {
+func (r *PGAuthNUserRepo) Create(user *domain.User, password string) (*domain.User, error) {
+	if !validator.StringLength(
+		password,
+		strconv.Itoa(domain.MinPasswordLen),
+		strconv.Itoa(domain.MaxPasswordLen),
+	) {
+		return nil, &domain.PasswordInvalidError{}
+	}
+
 	hashedPassword, err := r.hasher.Hash(password)
 	if err != nil {
 		log.Println(err)
@@ -42,7 +52,7 @@ func (r *PGAuthNUserRepo) Create(user *domain.AuthNUser, password string) (*doma
 		insertAuthNUser,
 		user.ID,
 		user.Username,
-		user.Email.String(),
+		user.Email,
 		hashedPassword,
 	).Scan(&id, &username, &email)
 
@@ -51,17 +61,17 @@ func (r *PGAuthNUserRepo) Create(user *domain.AuthNUser, password string) (*doma
 		if errors.As(err, &pqError) {
 			if pqError.Code == "23505" {
 				key, value := GetAlreadyExistsErrorKeyValue(pqError)
-				return nil, domain.AuthNUserAlreadyExistsError{Field: key, Value: value}
+				return nil, &domain.UserAlreadyExistsError{Field: key, Value: value}
 			}
 		}
 		log.Println(err)
 		return nil, err
 	}
 
-	return &domain.AuthNUser{
+	return &domain.User{
 		ID:       id,
 		Username: username,
-		Email:    domain.EmailAddress{Email: email},
+		Email:    email,
 	}, nil
 }
 
@@ -71,7 +81,7 @@ FROM authn_user
 WHERE username=$1
 `
 
-func (r *PGAuthNUserRepo) Get(username string) (*domain.AuthNUser, error) {
+func (r *PGAuthNUserRepo) Get(username string) (*domain.User, error) {
 	var id uuid.UUID
 	var email string
 
@@ -82,7 +92,7 @@ func (r *PGAuthNUserRepo) Get(username string) (*domain.AuthNUser, error) {
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, domain.AuthNUserNotFoundError{
+			return nil, domain.UserNotFoundError{
 				Field: "username",
 				Value: username,
 			}
@@ -91,10 +101,10 @@ func (r *PGAuthNUserRepo) Get(username string) (*domain.AuthNUser, error) {
 		return nil, err
 	}
 
-	return &domain.AuthNUser{
+	return &domain.User{
 		ID:       id,
 		Username: username,
-		Email:    domain.EmailAddress{Email: email},
+		Email:    email,
 	}, nil
 }
 
@@ -116,7 +126,7 @@ func (r *PGAuthNUserRepo) Verify(username string, password string) (bool, error)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return false, domain.AuthNUserNotFoundError{
+			return false, domain.UserNotFoundError{
 				Field: "username",
 				Value: username,
 			}

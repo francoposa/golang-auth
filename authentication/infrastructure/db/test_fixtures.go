@@ -12,6 +12,8 @@ import (
 
 	// Makes postgres driver available to the migrate package
 	_ "github.com/golang-migrate/migrate/database/postgres"
+	"github.com/google/uuid"
+
 	// Makes file url driver available to the migrate package
 	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/jmoiron/sqlx"
@@ -110,28 +112,33 @@ func migrateUp(t *testing.T, db *sql.DB) {
 	}
 }
 
-func SetUpAuthNUserRepo(t *testing.T, sqlxDB *sqlx.DB) (domain.AuthNUserRepo, []*domain.AuthNUser) {
+func SetUpAuthNUserRepo(t *testing.T, sqlxDB *sqlx.DB) (domain.UserRepo, []*domain.User) {
 	t.Helper()
 
 	authNUserRepo := NewPGAuthNUserRepo(sqlxDB, crypto.NewDefaultArgon2PassHasher())
 
-	users := []*domain.AuthNUser{
-		domain.NewAuthNUser(
-			"domtoretto",
-			domain.EmailAddress{Email: "americanmuscle@fastnfurious.com"},
-		),
-		domain.NewAuthNUser(
-			"brian",
-			domain.EmailAddress{Email: "importtuners@fastnfurious.com"},
-		),
-		domain.NewAuthNUser(
-			"roman",
-			domain.EmailAddress{Email: "ejectoseat@fastnfurious.com"},
-		),
+	users := []*domain.User{
+		{
+			ID:       uuid.New(),
+			Username: "domtoretto",
+			Email:    "americanmuscle@fastnfurious.com",
+		},
+		{
+			ID:       uuid.New(),
+			Username: "brian",
+			Email:    "importtuners@fastnfurious.com",
+		},
+		{
+			ID:       uuid.New(),
+			Username: "roman",
+			Email:    "ejectoseat@fastnfurious.com",
+		},
 	}
 
 	for _, user := range users {
-		_, err := authNUserRepo.Create(user, fmt.Sprintf("%s_pass", user.Username))
+		_, err := authNUserRepo.Create(
+			user, fmt.Sprintf("%s_password12345", user.Username),
+		)
 		if err != nil {
 			panic(err)
 		}
