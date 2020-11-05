@@ -31,11 +31,14 @@ func NewTemplates(pattern, baseTemplatePath string) map[string]*template.Templat
 
 type TemplateRenderer struct {
 	templates        map[string]*template.Template
-	baseTemplatePath string
+	baseTemplateName string
 }
 
-func NewTemplateRenderer(templates map[string]*template.Template, baseTemplateName string) *TemplateRenderer {
-	return &TemplateRenderer{templates: templates, baseTemplatePath: baseTemplateName}
+func NewTemplateRenderer(
+	templates map[string]*template.Template,
+	baseTemplateName string,
+) *TemplateRenderer {
+	return &TemplateRenderer{templates: templates, baseTemplateName: baseTemplateName}
 }
 
 func (tr *TemplateRenderer) RenderTemplate(w http.ResponseWriter, templateFileName string, data interface{}) error {
@@ -45,5 +48,5 @@ func (tr *TemplateRenderer) RenderTemplate(w http.ResponseWriter, templateFileNa
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	return templateToRender.ExecuteTemplate(w, tr.baseTemplatePath, data)
+	return templateToRender.ExecuteTemplate(w, tr.baseTemplateName, data)
 }

@@ -115,7 +115,7 @@ func migrateUp(t *testing.T, db *sql.DB) {
 func SetUpAuthNUserRepo(t *testing.T, sqlxDB *sqlx.DB) (domain.UserRepo, []*domain.User) {
 	t.Helper()
 
-	authNUserRepo := NewPGAuthNUserRepo(sqlxDB, crypto.NewDefaultArgon2PassHasher())
+	authNUserRepo := NewPGUserRepo(sqlxDB, crypto.NewDefaultArgon2PassHasher())
 
 	users := []*domain.User{
 		{

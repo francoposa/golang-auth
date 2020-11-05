@@ -15,14 +15,14 @@ import (
 	"golang-auth/authentication/infrastructure/db"
 )
 
-func setupTestAuthNUserHandler(t *testing.T, sqlxDB *sqlx.DB) *mux.Router {
+func setupTestLoginHandler(t *testing.T, sqlxDB *sqlx.DB) *mux.Router {
 	t.Helper()
 
-	authNUserRepo, _ := db.SetUpAuthNUserRepo(t, sqlxDB)
-	authNUserHandler := AuthNUserHandler{repo: authNUserRepo}
+	userRepo, _ := db.SetUpAuthNUserRepo(t, sqlxDB)
+	loginHandler := LoginHandler{userRepo: userRepo}
 
 	router := mux.NewRouter()
-	router.HandleFunc("/login", authNUserHandler.Authenticate).Methods("POST")
+	router.HandleFunc("/login", loginHandler.Login).Methods("POST")
 
 	return router
 }
@@ -32,12 +32,12 @@ func TestAuthNUserHandler_Authenticate(t *testing.T) {
 	sqlxDB, closeDB := db.SetUpDB(t)
 	defer closeDB(t, sqlxDB)
 
-	AuthNUserHandler := setupTestAuthNUserHandler(t, sqlxDB)
+	loginHandler := setupTestLoginHandler(t, sqlxDB)
 
 	t.Run("HTTP 200 for correct username and password", func(t *testing.T) {
 		response := httptest.NewRecorder()
 		body := map[string]string{"username": "domtoretto", "password": "domtoretto_password12345"}
-		AuthNUserHandler.ServeHTTP(response, newPOSTUserAuthenticateRequest(t, body))
+		loginHandler.ServeHTTP(response, newPOSTLoginRequest(t, body))
 
 		assertions.Equal(200, response.Code)
 	})
@@ -45,21 +45,25 @@ func TestAuthNUserHandler_Authenticate(t *testing.T) {
 	t.Run("HTTP 401 for incorrect username and password", func(t *testing.T) {
 		response := httptest.NewRecorder()
 		body := map[string]string{"username": "domtoretto", "password": "domtoretto_badpass"}
-		AuthNUserHandler.ServeHTTP(response, newPOSTUserAuthenticateRequest(t, body))
+		loginHandler.ServeHTTP(response, newPOSTLoginRequest(t, body))
 
 		assertions.Equal(401, response.Code)
 
 		body = map[string]string{"username": "domtoretto_badusername", "password": "domtoretto_password12345"}
-		AuthNUserHandler.ServeHTTP(response, newPOSTUserAuthenticateRequest(t, body))
+		loginHandler.ServeHTTP(response, newPOSTLoginRequest(t, body))
 
 		assertions.Equal(401, response.Code)
 	})
 
 }
 
-func newPOSTUserAuthenticateRequest(t *testing.T, body map[string]string) *http.Request {
+func newPOSTLoginRequest(t *testing.T, body map[string]string) *http.Request {
 	t.Helper()
 	jsonBody, _ := json.Marshal(body)
-	req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/login"), bytes.NewBuffer(jsonBody))
+	req, _ := http.NewRequest(
+		http.MethodPost,
+		fmt.Sprintf("/login"),
+		bytes.NewBuffer(jsonBody),
+	)
 	return req
 }

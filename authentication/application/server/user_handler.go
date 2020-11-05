@@ -9,20 +9,32 @@ import (
 	"golang-auth/authentication/domain"
 )
 
-type AuthNUserHandler struct {
+type UserHandler struct {
 	repo domain.UserRepo
 }
 
-func NewUserHandler(repo domain.UserRepo) *AuthNUserHandler {
-	return &AuthNUserHandler{repo: repo}
+func NewUserHandler(repo domain.UserRepo) *UserHandler {
+	return &UserHandler{repo: repo}
 }
 
-func (h *AuthNUserHandler) Create(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) Get(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	httpUser := HttpCreateUser{}
 	err := json.NewDecoder(r.Body).Decode(&httpUser)
 
-	if err != nil || !httpUser.Validate() {
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = httpUser.Validate()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		body := map[string]string{"errorMessage": err.Error()}
+		json.NewEncoder(w).Encode(body)
 		return
 	}
 
@@ -31,7 +43,7 @@ func (h *AuthNUserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var emailErr domain.EmailInvalidError
 	if errors.As(err, &usernameErr) || errors.As(err, &emailErr) {
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		body := map[string]string{"error_message": err.Error()}
+		body := map[string]string{"errorMessage": err.Error()}
 		json.NewEncoder(w).Encode(body)
 		return
 	}
@@ -41,13 +53,13 @@ func (h *AuthNUserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var existsErr domain.UserAlreadyExistsError
 	if errors.As(err, &passwordErr) {
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		body := map[string]string{"error_message": err.Error()}
+		body := map[string]string{"errorMessage": err.Error()}
 		json.NewEncoder(w).Encode(body)
 		return
 	}
 	if errors.As(err, &existsErr) {
 		w.WriteHeader(http.StatusConflict)
-		body := map[string]string{"error_message": err.Error()}
+		body := map[string]string{"errorMessage": err.Error()}
 		json.NewEncoder(w).Encode(body)
 		return
 	}
@@ -66,33 +78,4 @@ func (h *AuthNUserHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 
-}
-
-func (h *AuthNUserHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
-	httpUser := HttpAuthenticateUser{}
-	err := json.NewDecoder(r.Body).Decode(&httpUser)
-	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	verified, err := h.repo.Verify(httpUser.Username, httpUser.Password)
-	if errors.Is(
-		err,
-		domain.UserNotFoundError{Field: "username", Value: httpUser.Username}) {
-		verified = false
-	} else if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	if !verified {
-		w.WriteHeader(http.StatusUnauthorized)
-		body := map[string]string{"error_message": "Username or Password is incorrect"}
-		json.NewEncoder(w).Encode(body)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
 }

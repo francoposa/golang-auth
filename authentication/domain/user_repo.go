@@ -2,12 +2,15 @@ package domain
 
 import (
 	"fmt"
+
+	"github.com/google/uuid"
 )
 
 type UserRepo interface {
-	Get(username string) (*User, error)
+	GetByID(id uuid.UUID) (*User, error)
+	GetByUsername(username string) (*User, error)
 	Create(user *User, password string) (*User, error)
-	Verify(username string, password string) (bool, error)
+	VerifyPassword(username string, password string) (bool, error)
 }
 
 type UserNotFoundError struct {

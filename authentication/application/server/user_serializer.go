@@ -1,6 +1,8 @@
 package server
 
 import (
+	"errors"
+
 	"github.com/google/uuid"
 )
 
@@ -11,10 +13,11 @@ type HttpCreateUser struct {
 	ConfirmPassword string `json:"confirmPassword"`
 }
 
-func (u *HttpCreateUser) Validate() bool {
-	valid := true
-	valid = u.Password == u.ConfirmPassword
-	return valid
+func (u *HttpCreateUser) Validate() error {
+	if u.Password != u.ConfirmPassword {
+		return errors.New("Passwords do not match")
+	}
+	return nil
 }
 
 type HttpReadUser struct {

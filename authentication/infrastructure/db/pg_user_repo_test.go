@@ -3,6 +3,7 @@ package db
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
 	"golang-auth/authentication/domain"
@@ -71,15 +72,35 @@ func TestPGAuthNUserRepo(t *testing.T) {
 		)
 	})
 
-	t.Run("get authn user", func(t *testing.T) {
-		retrievedAuthNUser, err := authNUserRepo.Get(user.Username)
+	t.Run("get user by id", func(t *testing.T) {
+		retrievedUser, err := authNUserRepo.GetByID(user.ID)
 		assertions.Nil(err)
-		assertions.Equal(user, retrievedAuthNUser)
+		assertions.Equal(user, retrievedUser)
 	})
 
-	t.Run("get nonexistent authn user - error", func(t *testing.T) {
-		nonexistentAuthNUser, err := authNUserRepo.Get("xxx")
-		assertions.Nil(nonexistentAuthNUser, "expected nil struct, got: %q", nonexistentAuthNUser)
+	t.Run("get nonexistent user by id - error", func(t *testing.T) {
+		id := uuid.New()
+		retreivedUser, err := authNUserRepo.GetByID(id)
+		assertions.Nil(retreivedUser)
+		assertions.IsType(domain.UserNotFoundError{}, err)
+		assertions.Equal(
+			err,
+			domain.UserNotFoundError{
+				Field: "id",
+				Value: id.String(),
+			},
+		)
+	})
+
+	t.Run("get user by username", func(t *testing.T) {
+		retrievedUser, err := authNUserRepo.GetByUsername(user.Username)
+		assertions.Nil(err)
+		assertions.Equal(user, retrievedUser)
+	})
+
+	t.Run("get nonexistent user by username - error", func(t *testing.T) {
+		retreivedUser, err := authNUserRepo.GetByUsername("xxx")
+		assertions.Nil(retreivedUser)
 		assertions.IsType(domain.UserNotFoundError{}, err)
 		assertions.Equal(
 			err,
@@ -91,12 +112,12 @@ func TestPGAuthNUserRepo(t *testing.T) {
 	})
 
 	t.Run("verify authn user password", func(t *testing.T) {
-		verified, err := authNUserRepo.Verify(user.Username, "suki_password12345")
+		verified, err := authNUserRepo.VerifyPassword(user.Username, "suki_password12345")
 		assertions.Nil(err)
-		assertions.True(verified, "correct password was not verified")
+		assertions.True(verified)
 
-		verified, err = authNUserRepo.Verify(user.Username, "Suki_pass")
+		verified, err = authNUserRepo.VerifyPassword(user.Username, "Suki_pass")
 		assertions.Nil(err)
-		assertions.False(verified, "incorrect password was verified")
+		assertions.False(verified)
 	})
 }

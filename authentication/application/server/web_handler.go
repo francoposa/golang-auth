@@ -11,7 +11,7 @@ type AuthNWebHandler struct {
 	registerTemplateName string
 }
 
-func NewAuthNWebHandler(
+func NewWebHandler(
 	templateRenderer *TemplateRenderer,
 	loginTemplateName string,
 	registerTemplateName string,

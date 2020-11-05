@@ -19,7 +19,7 @@ type PGAuthNUserRepo struct {
 	hasher domain.Hasher
 }
 
-func NewPGAuthNUserRepo(db *sqlx.DB, hasher domain.Hasher) *PGAuthNUserRepo {
+func NewPGUserRepo(db *sqlx.DB, hasher domain.Hasher) *PGAuthNUserRepo {
 	return &PGAuthNUserRepo{db: db, hasher: hasher}
 }
 
@@ -75,13 +75,43 @@ func (r *PGAuthNUserRepo) Create(user *domain.User, password string) (*domain.Us
 	}, nil
 }
 
+const selectAuthNUserByID = `
+SELECT id, username, email
+FROM authn_user
+WHERE id=$1
+`
+
+func (r *PGAuthNUserRepo) GetByID(id uuid.UUID) (*domain.User, error) {
+	var username string
+	var email string
+
+	err := r.db.QueryRow(selectAuthNUserByID, id.String()).Scan(&id, &username, &email)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.UserNotFoundError{
+				Field: "id",
+				Value: id.String(),
+			}
+		}
+		log.Println(err)
+		return nil, err
+	}
+
+	return &domain.User{
+		ID:       id,
+		Username: username,
+		Email:    email,
+	}, nil
+}
+
 const selectAuthNUserByUsername = `
 SELECT id, username, email
 FROM authn_user
 WHERE username=$1
 `
 
-func (r *PGAuthNUserRepo) Get(username string) (*domain.User, error) {
+func (r *PGAuthNUserRepo) GetByUsername(username string) (*domain.User, error) {
 	var id uuid.UUID
 	var email string
 
@@ -114,7 +144,7 @@ FROM authn_user
 WHERE username=$1
 `
 
-func (r *PGAuthNUserRepo) Verify(username string, password string) (bool, error) {
+func (r *PGAuthNUserRepo) VerifyPassword(username string, password string) (bool, error) {
 	var id uuid.UUID
 	var email string
 	var hashedPassword string
