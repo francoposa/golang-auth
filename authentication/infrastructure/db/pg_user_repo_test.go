@@ -3,7 +3,10 @@ package db
 import (
 	"testing"
 
+	pgTools "github.com/francoposa/go-tools/postgres"
+	sqlTools "github.com/francoposa/go-tools/postgres/database_sql"
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 
 	"golang-auth/authentication/domain"
@@ -12,8 +15,25 @@ import (
 func TestPGAuthNUserRepo(t *testing.T) {
 	assertions := assert.New(t)
 
-	sqlxDB, closeDB := SetUpDB(t)
-	defer closeDB(t, sqlxDB)
+	superUserPGConfig := pgTools.Config{
+		Host:                  "localhost",
+		Port:                  5432,
+		Username:              "postgres",
+		Password:              "",
+		Database:              "postgres",
+		ApplicationName:       "",
+		ConnectTimeoutSeconds: 5,
+		SSLMode:               "disable",
+	}
+	dbName := sqlTools.RandomDBName("auth_test")
+
+	sqlDB, err := SetUpDB(t, dbName, superUserPGConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sqlTools.TearDownDB(t, sqlDB, superUserPGConfig)
+
+	sqlxDB := sqlx.NewDb(sqlDB, "postgres")
 	authNUserRepo, _ := SetUpAuthNUserRepo(t, sqlxDB)
 
 	user, err := domain.NewUser(

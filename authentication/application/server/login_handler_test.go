@@ -8,6 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	pgTools "github.com/francoposa/go-tools/postgres"
+	sqlTools "github.com/francoposa/go-tools/postgres/database_sql"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
@@ -29,8 +31,25 @@ func setupTestLoginHandler(t *testing.T, sqlxDB *sqlx.DB) *mux.Router {
 
 func TestAuthNUserHandler_Authenticate(t *testing.T) {
 	assertions := assert.New(t)
-	sqlxDB, closeDB := db.SetUpDB(t)
-	defer closeDB(t, sqlxDB)
+	superUserPGConfig := pgTools.Config{
+		Host:                  "localhost",
+		Port:                  5432,
+		Username:              "postgres",
+		Password:              "",
+		Database:              "postgres",
+		ApplicationName:       "",
+		ConnectTimeoutSeconds: 5,
+		SSLMode:               "disable",
+	}
+	dbName := sqlTools.RandomDBName("auth_test")
+
+	sqlDB, err := db.SetUpDB(t, dbName, superUserPGConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sqlTools.TearDownDB(t, sqlDB, superUserPGConfig)
+
+	sqlxDB := sqlx.NewDb(sqlDB, "postgres")
 
 	loginHandler := setupTestLoginHandler(t, sqlxDB)
 

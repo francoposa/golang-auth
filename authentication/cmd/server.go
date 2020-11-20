@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
+	sqlxTools "github.com/francoposa/go-tools/postgres/sqlx"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
@@ -43,7 +44,7 @@ to quickly create a Cobra application.`,
 		templateRenderer := server.NewTemplateRenderer(templates, "base")
 
 		pgConfig := db.NewDefaultPostgresConfig("examplecom_auth")
-		sqlxDB := db.MustConnect(pgConfig)
+		sqlxDB := sqlxTools.MustConnect(pgConfig)
 
 		hasher := crypto.NewDefaultArgon2PassHasher()
 

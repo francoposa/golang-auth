@@ -11,10 +11,6 @@ import (
 	"testing"
 	"time"
 
-	// Makes postgres driver available to the migrate package
-	_ "github.com/golang-migrate/migrate/database/postgres"
-	// Makes file url driver available to the migrate package
-	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/jmoiron/sqlx"
 	"github.com/pressly/goose"
 
