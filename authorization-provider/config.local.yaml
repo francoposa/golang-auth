@@ -1,0 +1,17 @@
+---
+server:
+  host: localhost
+  port: 2103
+  timeout:
+    server: 30
+    read: 15
+    write: 10
+    idle: 5
+postgres:
+  host: localhost
+  port: 5432
+  username: postgres
+  database: authorization_provider
+  application: authorization_provider
+  connectTimeoutSeconds: 5
+  sslMode: disable

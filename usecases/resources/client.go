@@ -12,7 +12,7 @@ func (e *ClientRequiresRedirectURIError) Error() string {
 	return "AuthZClient Registration Requires Redirect URI: RFC 6749 Section 3.1.2.2"
 }
 
-// AuthZClient represents an authorization client as defined in RFC 6749 Section 1.1 - Roles
+// AuthZClient represents an authorization-provider client as defined in RFC 6749 Section 1.1 - Roles
 type AuthZClient struct {
 	ID          uuid.UUID
 	Secret      *uuid.UUID
@@ -27,13 +27,13 @@ func NewClient(redirectURI string, public bool, firstParty bool) (*AuthZClient, 
 	// Require clients to register a Redirect URI as specified in
 	// RFC 6749 Section 3.1.2.2 - Redirection Endpoint Registration Requirements
 	//
-	// The authorization server MUST require the following clients to
+	// The authorization-provider server MUST require the following clients to
 	// register their redirection endpoint:
 	//    - Public clients.
 	//    - Confidential clients utilizing the implicit grant type.
 	//
-	// The authorization server SHOULD require all clients to register their
-	// redirection endpoint prior to utilizing the authorization endpoint.
+	// The authorization-provider server SHOULD require all clients to register their
+	// redirection endpoint prior to utilizing the authorization-provider endpoint.
 	var uri *url.URL
 	var err error
 	if redirectURI == "" {

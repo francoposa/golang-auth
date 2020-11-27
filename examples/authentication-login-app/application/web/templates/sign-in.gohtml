@@ -1,0 +1,39 @@
+{{define "sign-in"}}
+<!DOCTYPE html>
+<html lang="en">
+    {{template "head"}}
+    {{template "body"}}
+    {{template "scripts"}}
+</html>
+{{end}}
+
+{{define "body"}}
+<body>
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-12">
+                <h1>Sign In</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 offset-md-3 col-xs-10 offset-xs-2">
+                <form id="login" action="/login" method="post">
+                    <div id="login-form-alert"></div>
+                    <div class="form-group">
+                        <label for="username">Username</label><br>
+                        <input class="form-control" id="username" name="username" type="text" value="" size=20 autofocus />
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label><br>
+                        <input class="form-control" id="password" name="password" type="password" value="" size=20 />
+                    </div>
+                    <div class="form-group text-center">
+                        <input class="btn btn-outline-success text-center" type="button" value="Sign In"
+                               onClick="postLogin()" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+{{end}}

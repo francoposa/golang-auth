@@ -5,7 +5,7 @@ import (
 )
 
 // AuthZResourceType is an abstract entity in the ExampleCom system which may be operated upon
-// OAuth Clients request authorization to operate on Resources on behalf of a AuthZResourceType Owner.
+// OAuth Clients request authorization-provider to operate on Resources on behalf of a AuthZResourceType Owner.
 type AuthZResourceType struct {
 	ID          uuid.UUID
 	Name        string
