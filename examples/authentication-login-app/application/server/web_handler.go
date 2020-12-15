@@ -6,29 +6,30 @@ import (
 )
 
 type WebHandler struct {
-	templateRenderer     *TemplateRenderer
-	loginTemplateName    string
-	registerTemplateName string
+	templateRenderer *TemplateRenderer
 }
 
 func NewWebHandler(
 	templateRenderer *TemplateRenderer,
-	loginTemplateName string,
-	registerTemplateName string,
 ) *WebHandler {
 	return &WebHandler{
-		templateRenderer:     templateRenderer,
-		loginTemplateName:    loginTemplateName,
-		registerTemplateName: registerTemplateName,
+		templateRenderer: templateRenderer,
 	}
 }
 
 func (h *WebHandler) GetLogin(w http.ResponseWriter, r *http.Request) {
-	err := h.templateRenderer.RenderTemplate(w, h.loginTemplateName, "")
-	fmt.Println(err)
+	err := h.templateRenderer.RenderTemplate(w, "sign-in", "")
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
 }
 
 func (h *WebHandler) GetRegister(w http.ResponseWriter, r *http.Request) {
-	err := h.templateRenderer.RenderTemplate(w, h.registerTemplateName, "")
-	fmt.Println(err)
+	err := h.templateRenderer.RenderTemplate(w, "sign-up", "")
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }

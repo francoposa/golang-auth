@@ -10,21 +10,21 @@ import (
 
 	pgTools "github.com/francoposa/go-tools/postgres"
 	sqlTools "github.com/francoposa/go-tools/postgres/database_sql"
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 
-	"golang-auth/authentication-identity-user-mgmt/infrastructure/db"
+	"golang-auth/authentication/infrastructure/db"
 )
 
-func setupTestLoginHandler(t *testing.T, sqlxDB *sqlx.DB) *mux.Router {
+func setupTestUserHandler(t *testing.T, sqlxDB *sqlx.DB) chi.Router {
 	t.Helper()
 
 	userRepo, _ := db.SetUpUserRepo(t, sqlxDB)
-	loginHandler := LoginHandler{userRepo: userRepo}
+	userHandler := UserHandler{repo: userRepo}
 
-	router := mux.NewRouter()
-	router.HandleFunc("/login", loginHandler.Login).Methods("POST")
+	router := chi.NewRouter()
+	router.Post("/api/v1/users/authenticate", userHandler.Authenticate)
 
 	return router
 }
@@ -41,7 +41,7 @@ func TestAuthNUserHandler_Authenticate(t *testing.T) {
 		ConnectTimeoutSeconds: 5,
 		SSLMode:               "disable",
 	}
-	dbName := sqlTools.RandomDBName("auth_test")
+	dbName := pgTools.RandomDBName("auth_test")
 
 	sqlDB, err := db.SetUpDB(t, dbName, superUserPGConfig)
 	if err != nil {
@@ -51,37 +51,37 @@ func TestAuthNUserHandler_Authenticate(t *testing.T) {
 
 	sqlxDB := sqlx.NewDb(sqlDB, "postgres")
 
-	loginHandler := setupTestLoginHandler(t, sqlxDB)
+	userHandler := setupTestUserHandler(t, sqlxDB)
 
 	t.Run("HTTP 200 for correct username and password", func(t *testing.T) {
 		response := httptest.NewRecorder()
 		body := map[string]string{"username": "domtoretto", "password": "domtoretto_password12345"}
-		loginHandler.ServeHTTP(response, newPOSTLoginRequest(t, body))
+		userHandler.ServeHTTP(response, newPOSTUserAuthenticateRequest(t, body))
 
 		assertions.Equal(200, response.Code)
 	})
 
 	t.Run("HTTP 401 for incorrect username and password", func(t *testing.T) {
 		response := httptest.NewRecorder()
-		body := map[string]string{"username": "domtoretto", "password": "domtoretto_badpass"}
-		loginHandler.ServeHTTP(response, newPOSTLoginRequest(t, body))
+		body := map[string]string{"username": "domtoretto", "password": "domtoretto_badpassword"}
+		userHandler.ServeHTTP(response, newPOSTUserAuthenticateRequest(t, body))
 
 		assertions.Equal(401, response.Code)
 
 		body = map[string]string{"username": "domtoretto_badusername", "password": "domtoretto_password12345"}
-		loginHandler.ServeHTTP(response, newPOSTLoginRequest(t, body))
+		userHandler.ServeHTTP(response, newPOSTUserAuthenticateRequest(t, body))
 
 		assertions.Equal(401, response.Code)
 	})
 
 }
 
-func newPOSTLoginRequest(t *testing.T, body map[string]string) *http.Request {
+func newPOSTUserAuthenticateRequest(t *testing.T, body map[string]string) *http.Request {
 	t.Helper()
 	jsonBody, _ := json.Marshal(body)
 	req, _ := http.NewRequest(
 		http.MethodPost,
-		fmt.Sprintf("/login"),
+		fmt.Sprintf("/api/v1/users/authenticate"),
 		bytes.NewBuffer(jsonBody),
 	)
 	return req

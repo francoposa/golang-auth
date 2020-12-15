@@ -30,13 +30,9 @@ var serverCmd = &cobra.Command{
 		templatePattern := filepath.Join(wd, "/application/web/templates/*")
 		baseTemplatePath := filepath.Join(wd, "/application/web/templates/base.gohtml")
 		templates := server.NewTemplates(templatePattern, baseTemplatePath)
-		templateRenderer := server.NewTemplateRenderer(templates, "base")
+		templateRenderer := server.NewTemplateRenderer(templates)
 
-		webHandler := server.NewWebHandler(
-			templateRenderer,
-			"sign-in.gohtml",
-			"sign-up.gohtml",
-		)
+		webHandler := server.NewWebHandler(templateRenderer)
 
 		httpStaticAssetsDir := http.Dir(fmt.Sprintf("%s/application/web/static/", wd))
 		staticRoute := "/static/"

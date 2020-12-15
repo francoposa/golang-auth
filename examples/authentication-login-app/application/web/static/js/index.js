@@ -1,13 +1,15 @@
-
+const LOGIN_FORM_ID = "login";
 const LOGIN_FORM_USERNAME_ID = "username";
 const LOGIN_FORM_PASSWORD_ID = "password";
 const LOGIN_FORM_ALERT_ID = "login-form-alert";
 const LOGIN_API_PATH = "/api/v1/login";
 
-const REGISTER_FORM_CONFIRM_PASSWORD_ID = "password";
-const REGISTER_FORM_PASSWORD_ID = "confirm-password";
-const USERS_API_PATH = "/api/v1/users";
-
+document.getElementById(LOGIN_FORM_ID).addEventListener(
+    "submit",
+    function(e) {
+        e.preventDefault()
+        postLogin()
+    })
 
 function postLogin() {
     let username = document.getElementById(LOGIN_FORM_USERNAME_ID).value;

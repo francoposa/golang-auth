@@ -3,7 +3,7 @@ package domain
 import (
 	"fmt"
 
-	"github.com/google/uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 type UserRepo interface {
@@ -19,7 +19,7 @@ type UserNotFoundError struct {
 }
 
 func (e UserNotFoundError) Error() string {
-	return fmt.Sprintf("No User found with with %s=%s", e.Field, e.Value)
+	return fmt.Sprintf("No User found with %s=%s", e.Field, e.Value)
 }
 
 type UserAlreadyExistsError struct {

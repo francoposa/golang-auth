@@ -6,21 +6,22 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
+	"time"
 
 	pgTools "github.com/francoposa/go-tools/postgres"
 	sqlTools "github.com/francoposa/go-tools/postgres/database_sql"
 
 	// Makes postgres driver available to the migrate package
 	_ "github.com/golang-migrate/migrate/database/postgres"
-	"github.com/google/uuid"
+	uuid "github.com/satori/go.uuid"
 
 	// Makes file url driver available to the migrate package
 	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/jmoiron/sqlx"
 	"github.com/pressly/goose"
 
-	"golang-auth/authentication-identity-user-mgmt/domain"
-	"golang-auth/authentication-identity-user-mgmt/infrastructure/crypto"
+	"golang-auth/authentication/domain"
+	"golang-auth/authentication/infrastructure/crypto"
 )
 
 var testDBNameTemplate = `examplecom_auth_test_%d`
@@ -67,19 +68,28 @@ func SetUpUserRepo(t *testing.T, sqlxDB *sqlx.DB) (domain.UserRepo, []*domain.Us
 
 	users := []*domain.User{
 		{
-			ID:       uuid.New(),
-			Username: "domtoretto",
-			Email:    "americanmuscle@fastnfurious.com",
+			ID:        uuid.NewV4(),
+			Username:  "domtoretto",
+			Email:     "americanmuscle@fastnfurious.com",
+			Enabled:   true,
+			CreatedAt: time.Now().UTC(),
+			UpdatedAt: time.Now().UTC(),
 		},
 		{
-			ID:       uuid.New(),
-			Username: "brian",
-			Email:    "importtuners@fastnfurious.com",
+			ID:        uuid.NewV4(),
+			Username:  "brian",
+			Email:     "importtuners@fastnfurious.com",
+			Enabled:   true,
+			CreatedAt: time.Now().UTC(),
+			UpdatedAt: time.Now().UTC(),
 		},
 		{
-			ID:       uuid.New(),
-			Username: "roman",
-			Email:    "ejectoseat@fastnfurious.com",
+			ID:        uuid.NewV4(),
+			Username:  "roman",
+			Email:     "ejectoseat@fastnfurious.com",
+			Enabled:   true,
+			CreatedAt: time.Now().UTC(),
+			UpdatedAt: time.Now().UTC(),
 		},
 	}
 

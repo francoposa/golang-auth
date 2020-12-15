@@ -3,7 +3,7 @@ package server
 import (
 	"errors"
 
-	"github.com/google/uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 type HttpCreateUser struct {

@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"strings"
 )
 
 func NewTemplates(pattern, baseTemplatePath string) map[string]*template.Template {
@@ -21,7 +22,8 @@ func NewTemplates(pattern, baseTemplatePath string) map[string]*template.Templat
 			continue
 		}
 		fileName := filepath.Base(templatePath)
-		templates[fileName] = template.Must(
+		fileNameNoExt := strings.TrimSuffix(fileName, filepath.Ext(fileName))
+		templates[fileNameNoExt] = template.Must(
 			template.ParseFiles(templatePath, baseTemplatePath),
 		)
 	}
@@ -30,23 +32,19 @@ func NewTemplates(pattern, baseTemplatePath string) map[string]*template.Templat
 }
 
 type TemplateRenderer struct {
-	templates        map[string]*template.Template
-	baseTemplateName string
+	templates map[string]*template.Template
 }
 
-func NewTemplateRenderer(
-	templates map[string]*template.Template,
-	baseTemplateName string,
-) *TemplateRenderer {
-	return &TemplateRenderer{templates: templates, baseTemplateName: baseTemplateName}
+func NewTemplateRenderer(templates map[string]*template.Template) *TemplateRenderer {
+	return &TemplateRenderer{templates: templates}
 }
 
-func (tr *TemplateRenderer) RenderTemplate(w http.ResponseWriter, templateFileName string, data interface{}) error {
-	templateToRender, ok := tr.templates[templateFileName]
+func (tr *TemplateRenderer) RenderTemplate(w http.ResponseWriter, templateName string, data interface{}) error {
+	templateToRender, ok := tr.templates[templateName]
 	if !ok {
-		return fmt.Errorf("The templateToRender %s does not exist.", templateFileName)
+		return fmt.Errorf("Template %s does not exist.", templateName)
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	return templateToRender.ExecuteTemplate(w, "sign-in", data)
+	return templateToRender.ExecuteTemplate(w, templateName, data)
 }

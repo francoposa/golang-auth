@@ -1,7 +1,7 @@
 ---
 server:
   host: localhost
-  port: 2101
+  port: 2102
   timeout:
     server: 30
     read: 15
@@ -11,7 +11,7 @@ postgres:
   host: localhost
   port: 5432
   username: postgres
-  database: authentication_identity_user_mgmt
+  database: access_control_roles_permissions
   application: authentication_identity_user_mgmt
   connectTimeoutSeconds: 5
   sslMode: disable

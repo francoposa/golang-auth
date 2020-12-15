@@ -5,13 +5,14 @@ import (
 	"errors"
 	"log"
 	"strconv"
+	"time"
 
 	validator "github.com/asaskevich/govalidator"
-	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
+	uuid "github.com/satori/go.uuid"
 
-	"golang-auth/authentication-identity-user-mgmt/domain"
+	"golang-auth/authentication/domain"
 )
 
 type PGAuthNUserRepo struct {
@@ -23,10 +24,12 @@ func NewPGUserRepo(db *sqlx.DB, hasher domain.Hasher) *PGAuthNUserRepo {
 	return &PGAuthNUserRepo{db: db, hasher: hasher}
 }
 
-var insertAuthNUser = `
-INSERT INTO authn_user (id, username, email, password) 
-VALUES ($1, $2, $3, $4)
-RETURNING id, username, email
+const insertUser = `
+INSERT INTO authn_identity_user (
+	id, username, email, password, enabled, created_at, updated_at
+) 
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, username, email, enabled, created_at, updated_at
 `
 
 func (r *PGAuthNUserRepo) Create(user *domain.User, password string) (*domain.User, error) {
@@ -47,14 +50,20 @@ func (r *PGAuthNUserRepo) Create(user *domain.User, password string) (*domain.Us
 	var id uuid.UUID
 	var username string
 	var email string
+	var enabled bool
+	var created_at time.Time
+	var updated_at time.Time
 
-	err = r.db.QueryRowx(
-		insertAuthNUser,
+	err = r.db.QueryRow(
+		insertUser,
 		user.ID,
 		user.Username,
 		user.Email,
 		hashedPassword,
-	).Scan(&id, &username, &email)
+		user.Enabled,
+		user.CreatedAt,
+		user.UpdatedAt,
+	).Scan(&id, &username, &email, &enabled, &created_at, &updated_at)
 
 	if err != nil {
 		var pqError *pq.Error
@@ -69,23 +78,32 @@ func (r *PGAuthNUserRepo) Create(user *domain.User, password string) (*domain.Us
 	}
 
 	return &domain.User{
-		ID:       id,
-		Username: username,
-		Email:    email,
+		ID:        id,
+		Username:  username,
+		Email:     email,
+		Enabled:   enabled,
+		CreatedAt: created_at.UTC(),
+		UpdatedAt: updated_at.UTC(),
 	}, nil
 }
 
-const selectAuthNUserByID = `
-SELECT id, username, email
-FROM authn_user
+const selectUserByID = `
+SELECT id, username, email, enabled, created_at, updated_at
+FROM authn_identity_user
 WHERE id=$1
 `
 
 func (r *PGAuthNUserRepo) GetByID(id uuid.UUID) (*domain.User, error) {
 	var username string
 	var email string
+	var enabled bool
+	var created_at time.Time
+	var updated_at time.Time
 
-	err := r.db.QueryRow(selectAuthNUserByID, id.String()).Scan(&id, &username, &email)
+	err := r.db.QueryRow(
+		selectUserByID,
+		id.String(),
+	).Scan(&id, &username, &email, &enabled, &created_at, &updated_at)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -99,26 +117,32 @@ func (r *PGAuthNUserRepo) GetByID(id uuid.UUID) (*domain.User, error) {
 	}
 
 	return &domain.User{
-		ID:       id,
-		Username: username,
-		Email:    email,
+		ID:        id,
+		Username:  username,
+		Email:     email,
+		Enabled:   enabled,
+		CreatedAt: created_at.UTC(),
+		UpdatedAt: updated_at.UTC(),
 	}, nil
 }
 
-const selectAuthNUserByUsername = `
-SELECT id, username, email
-FROM authn_user
+const selectUserByUsername = `
+SELECT id, username, email, enabled, created_at, updated_at
+FROM authn_identity_user
 WHERE username=$1
 `
 
 func (r *PGAuthNUserRepo) GetByUsername(username string) (*domain.User, error) {
 	var id uuid.UUID
 	var email string
+	var enabled bool
+	var created_at time.Time
+	var updated_at time.Time
 
 	err := r.db.QueryRow(
-		selectAuthNUserByUsername,
+		selectUserByUsername,
 		username,
-	).Scan(&id, &username, &email)
+	).Scan(&id, &username, &email, &enabled, &created_at, &updated_at)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -132,15 +156,18 @@ func (r *PGAuthNUserRepo) GetByUsername(username string) (*domain.User, error) {
 	}
 
 	return &domain.User{
-		ID:       id,
-		Username: username,
-		Email:    email,
+		ID:        id,
+		Username:  username,
+		Email:     email,
+		Enabled:   enabled,
+		CreatedAt: created_at.UTC(),
+		UpdatedAt: updated_at.UTC(),
 	}, nil
 }
 
-const selectAuthNUserByUsernameWithPassword = `
+const selectUserByUsernameWithPassword = `
 SELECT id, username, email, password
-FROM authn_user
+FROM authn_identity_user
 WHERE username=$1
 `
 
@@ -150,7 +177,7 @@ func (r *PGAuthNUserRepo) VerifyPassword(username string, password string) (bool
 	var hashedPassword string
 
 	err := r.db.QueryRowx(
-		selectAuthNUserByUsernameWithPassword,
+		selectUserByUsernameWithPassword,
 		username,
 	).Scan(&id, &username, &email, &hashedPassword)
 

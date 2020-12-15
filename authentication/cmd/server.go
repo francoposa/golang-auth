@@ -16,9 +16,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"golang-auth/authentication-identity-user-mgmt/application/server"
-	"golang-auth/authentication-identity-user-mgmt/infrastructure/crypto"
-	"golang-auth/authentication-identity-user-mgmt/infrastructure/db"
+	"golang-auth/authentication/application/server"
+	"golang-auth/authentication/infrastructure/crypto"
+	"golang-auth/authentication/infrastructure/db"
 )
 
 var serverCmd = &cobra.Command{
@@ -42,7 +42,9 @@ var serverCmd = &cobra.Command{
 		hasher := crypto.NewDefaultArgon2PassHasher()
 		userRepo := db.NewPGUserRepo(sqlxDB, hasher)
 		userHandler := server.NewUserHandler(userRepo)
-		loginHandler := server.NewLoginHandler(userRepo)
+		loginHandler := server.NewLoginHandler(
+			viper.GetString("ui_app.urls.login"),
+		)
 
 		router := chi.NewRouter()
 
@@ -53,8 +55,15 @@ var serverCmd = &cobra.Command{
 		router.Use(middleware.Recoverer)
 
 		// Routing to API handlers
-		router.Post("/api/v1/login", loginHandler.Login)
-		router.Post("/api/v1/users", userHandler.Create)
+		router.Route("/api/v1/login", func(router chi.Router) {
+			router.Get("/", loginHandler.InitializeLogin)
+		})
+
+		router.Route("/api/v1/users", func(router chi.Router) {
+			router.Post("/", userHandler.Create)
+			router.Get("/{id}", userHandler.Get)
+			//router.Post("/authenticate", userHandler.Authenticate)
+		})
 
 		handler := cors.Default().Handler(router)
 		handler = handlers.LoggingHandler(os.Stdout, handler)
@@ -130,12 +139,21 @@ func init() {
 	)
 	serverCmd.PersistentFlags().String("postgres.connectTimeoutSeconds", "", "")
 	err = viper.BindPFlag(
-		"postgres.connectTimeoutSeconds",
-		serverCmd.PersistentFlags().Lookup("postgres.connectTimeoutSeconds"),
+		"postgres.connectTimeoutSeconds", serverCmd.PersistentFlags().Lookup("postgres.connectTimeoutSeconds"),
 	)
 	serverCmd.PersistentFlags().String("postgres.sslMode", "", "")
 	err = viper.BindPFlag(
 		"postgres.sslMode", serverCmd.PersistentFlags().Lookup("postgres.sslMode"),
+	)
+
+	// Login & Register UI
+	serverCmd.PersistentFlags().String("ui_app.urls.login", "", "")
+	err = viper.BindPFlag(
+		"ui_app.urls.login", serverCmd.PersistentFlags().Lookup("ui_app.urls.login"),
+	)
+	serverCmd.PersistentFlags().String("ui_app.urls.register", "", "")
+	err = viper.BindPFlag(
+		"ui_app.urls.login", serverCmd.PersistentFlags().Lookup("ui_app.urls.register"),
 	)
 
 	if err != nil {

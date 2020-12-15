@@ -5,11 +5,11 @@ import (
 
 	pgTools "github.com/francoposa/go-tools/postgres"
 	sqlTools "github.com/francoposa/go-tools/postgres/database_sql"
-	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 
-	"golang-auth/authentication-identity-user-mgmt/domain"
+	"golang-auth/authentication/domain"
 )
 
 func TestPGAuthNUserRepo(t *testing.T) {
@@ -25,7 +25,7 @@ func TestPGAuthNUserRepo(t *testing.T) {
 		ConnectTimeoutSeconds: 5,
 		SSLMode:               "disable",
 	}
-	dbName := sqlTools.RandomDBName("auth_test")
+	dbName := pgTools.RandomDBName("auth_test")
 
 	sqlDB, err := SetUpDB(t, dbName, superUserPGConfig)
 	if err != nil {
@@ -51,11 +51,11 @@ func TestPGAuthNUserRepo(t *testing.T) {
 
 	t.Run("create already existing user - error", func(t *testing.T) {
 		userWithExistingID := &domain.User{ID: user.ID}
-		retrievedUserWithExistingID, err := authNUserRepo.Create(
+		createdUserWithExistingID, err := authNUserRepo.Create(
 			userWithExistingID,
 			"suki_password12345",
 		)
-		assertions.Nil(retrievedUserWithExistingID)
+		assertions.Nil(createdUserWithExistingID)
 		assertions.Equal(
 			err,
 			domain.UserAlreadyExistsError{
@@ -65,11 +65,11 @@ func TestPGAuthNUserRepo(t *testing.T) {
 		)
 
 		userWithExistingUsername := &domain.User{Username: user.Username}
-		retrievedUserWithExistingUsername, err := authNUserRepo.Create(
+		createdUserWithExistingUsername, err := authNUserRepo.Create(
 			userWithExistingUsername,
 			"suki_password12345",
 		)
-		assertions.Nil(retrievedUserWithExistingUsername)
+		assertions.Nil(createdUserWithExistingUsername)
 		assertions.Equal(
 			err,
 			domain.UserAlreadyExistsError{
@@ -79,10 +79,10 @@ func TestPGAuthNUserRepo(t *testing.T) {
 		)
 
 		userWithExistingEmail := &domain.User{Email: user.Email}
-		retrievedUserWithExistingEmail, err := authNUserRepo.Create(
+		createdUserWithExistingEmail, err := authNUserRepo.Create(
 			userWithExistingEmail, "suki_password12345",
 		)
-		assertions.Nil(retrievedUserWithExistingEmail)
+		assertions.Nil(createdUserWithExistingEmail)
 		assertions.Equal(
 			err,
 			domain.UserAlreadyExistsError{
@@ -99,7 +99,7 @@ func TestPGAuthNUserRepo(t *testing.T) {
 	})
 
 	t.Run("get nonexistent user by id - error", func(t *testing.T) {
-		id := uuid.New()
+		id := uuid.NewV4()
 		retreivedUser, err := authNUserRepo.GetByID(id)
 		assertions.Nil(retreivedUser)
 		assertions.IsType(domain.UserNotFoundError{}, err)

@@ -3,9 +3,10 @@ package domain
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	validator "github.com/asaskevich/govalidator"
-	"github.com/google/uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 const MinUsernameLen = 8
@@ -14,13 +15,16 @@ const MinPasswordLen = 16
 const MaxPasswordLen = 128
 
 type User struct {
-	ID       uuid.UUID
-	Username string
-	Email    string
+	ID        uuid.UUID
+	Username  string
+	Email     string
+	Enabled   bool
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func NewUser(username, email string) (*User, error) {
-	id := uuid.New()
+	id := uuid.NewV4()
 
 	if !validator.StringLength(
 		username,
@@ -35,9 +39,12 @@ func NewUser(username, email string) (*User, error) {
 	}
 
 	return &User{
-		ID:       id,
-		Username: username,
-		Email:    email,
+		ID:        id,
+		Username:  username,
+		Email:     email,
+		Enabled:   true,
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
 	}, nil
 }
 
