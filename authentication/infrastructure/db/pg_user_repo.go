@@ -25,7 +25,7 @@ func NewPGUserRepo(db *sqlx.DB, hasher domain.Hasher) *PGAuthNUserRepo {
 }
 
 const insertUser = `
-INSERT INTO authn_identity_user (
+INSERT INTO authn_user (
 	id, username, email, password, enabled, created_at, updated_at
 ) 
 VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -89,7 +89,7 @@ func (r *PGAuthNUserRepo) Create(user *domain.User, password string) (*domain.Us
 
 const selectUserByID = `
 SELECT id, username, email, enabled, created_at, updated_at
-FROM authn_identity_user
+FROM authn_user
 WHERE id=$1
 `
 
@@ -128,7 +128,7 @@ func (r *PGAuthNUserRepo) GetByID(id uuid.UUID) (*domain.User, error) {
 
 const selectUserByUsername = `
 SELECT id, username, email, enabled, created_at, updated_at
-FROM authn_identity_user
+FROM authn_user
 WHERE username=$1
 `
 
@@ -167,7 +167,7 @@ func (r *PGAuthNUserRepo) GetByUsername(username string) (*domain.User, error) {
 
 const selectUserByUsernameWithPassword = `
 SELECT id, username, email, password
-FROM authn_identity_user
+FROM authn_user
 WHERE username=$1
 `
 

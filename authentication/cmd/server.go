@@ -56,7 +56,7 @@ var serverCmd = &cobra.Command{
 
 		// Routing to API handlers
 		router.Route("/api/v1/login", func(router chi.Router) {
-			router.Get("/", loginHandler.InitializeLogin)
+			router.Post("/", loginHandler.InitializeLogin)
 		})
 
 		router.Route("/api/v1/users", func(router chi.Router) {
