@@ -48,6 +48,17 @@ func NewUser(username, email string) (*User, error) {
 	}, nil
 }
 
+func ValidatePasswordRequirements(password string) error {
+	if !validator.StringLength(
+		password,
+		strconv.Itoa(MinPasswordLen),
+		strconv.Itoa(MaxPasswordLen),
+	) {
+		return PasswordInvalidError{}
+	}
+	return nil
+}
+
 type UsernameInvalidError struct{}
 
 func (e UsernameInvalidError) Error() string {

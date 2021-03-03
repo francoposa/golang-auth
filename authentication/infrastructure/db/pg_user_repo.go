@@ -4,10 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"log"
-	"strconv"
 	"time"
 
-	validator "github.com/asaskevich/govalidator"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 	uuid "github.com/satori/go.uuid"
@@ -15,13 +13,13 @@ import (
 	"golang-auth/authentication/domain"
 )
 
-type PGAuthNUserRepo struct {
+type PGUserRepo struct {
 	db     *sqlx.DB
 	hasher domain.Hasher
 }
 
-func NewPGUserRepo(db *sqlx.DB, hasher domain.Hasher) *PGAuthNUserRepo {
-	return &PGAuthNUserRepo{db: db, hasher: hasher}
+func NewPGUserRepo(db *sqlx.DB, hasher domain.Hasher) *PGUserRepo {
+	return &PGUserRepo{db: db, hasher: hasher}
 }
 
 const insertUser = `
@@ -32,14 +30,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING id, username, email, enabled, created_at, updated_at
 `
 
-func (r *PGAuthNUserRepo) Create(user *domain.User, password string) (*domain.User, error) {
-	if !validator.StringLength(
-		password,
-		strconv.Itoa(domain.MinPasswordLen),
-		strconv.Itoa(domain.MaxPasswordLen),
-	) {
-		return nil, domain.PasswordInvalidError{}
-	}
+func (r *PGUserRepo) Create(user *domain.User, password string) (*domain.User, error) {
 
 	hashedPassword, err := r.hasher.Hash(password)
 	if err != nil {
@@ -93,7 +84,7 @@ FROM authn_user
 WHERE id=$1
 `
 
-func (r *PGAuthNUserRepo) GetByID(id uuid.UUID) (*domain.User, error) {
+func (r *PGUserRepo) GetByID(id uuid.UUID) (*domain.User, error) {
 	var username string
 	var email string
 	var enabled bool
@@ -132,7 +123,7 @@ FROM authn_user
 WHERE username=$1
 `
 
-func (r *PGAuthNUserRepo) GetByUsername(username string) (*domain.User, error) {
+func (r *PGUserRepo) GetByUsername(username string) (*domain.User, error) {
 	var id uuid.UUID
 	var email string
 	var enabled bool
@@ -171,7 +162,7 @@ FROM authn_user
 WHERE username=$1
 `
 
-func (r *PGAuthNUserRepo) VerifyPassword(username string, password string) (bool, error) {
+func (r *PGUserRepo) VerifyPassword(username string, password string) (bool, error) {
 	var id uuid.UUID
 	var email string
 	var hashedPassword string

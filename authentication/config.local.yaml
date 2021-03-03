@@ -11,8 +11,8 @@ postgres:
   host: localhost
   port: 5432
   username: postgres
-  database: authentication_identity_user_mgmt
-  application: authentication_identity_user_mgmt
+  database: authentication
+  application: authentication
   connectTimeoutSeconds: 5
   sslMode: disable
 ui_app:
