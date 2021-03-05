@@ -27,22 +27,26 @@ var serverCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		pgConfig := pgTools.Config{
-			Host:                  viper.GetString("postgres.host"),
-			Port:                  viper.GetInt("postgres.port"),
-			Username:              viper.GetString("postgres.username"),
-			Password:              viper.GetString("postgres.password"),
-			Database:              viper.GetString("postgres.database"),
-			ApplicationName:       viper.GetString("postgres.application"),
-			ConnectTimeoutSeconds: viper.GetInt("postgres.connectTimeoutSeconds"),
-			SSLMode:               viper.GetString("postgres.sslMode"),
+			Host:                  viper.GetString(pgHostFlag),
+			Port:                  viper.GetInt(pgPortFlag),
+			Username:              viper.GetString(pgUsernameFlag),
+			Password:              viper.GetString(pgPasswordFlag),
+			Database:              viper.GetString(pgDatabaseFlag),
+			ApplicationName:       viper.GetString(pgApplicationFlag),
+			ConnectTimeoutSeconds: viper.GetInt(pgConnectTimeoutFlag),
+			SSLMode:               viper.GetString(pgSSLModeFlag),
 		}
 		sqlxDB := sqlxTools.MustConnect(pgConfig)
 
 		hasher := crypto.NewDefaultArgon2PassHasher()
 		userRepo := db.NewPGUserRepo(sqlxDB, hasher)
 		userHandler := server.NewUserHandler(userRepo)
+
+		loginRepo := db.NewPGLoginRepo(sqlxDB, userRepo)
 		loginHandler := server.NewLoginHandler(
-			viper.GetString("ui_app.urls.login"),
+			loginRepo,
+			userRepo,
+			viper.GetString(uiAppLoginURLFlag),
 		)
 
 		router := chi.NewRouter()
@@ -107,6 +111,16 @@ const serverTimeoutWriteFlag = "server.timeout.write"
 const serverTimeoutIdleFlag = "server.timeout.idle"
 const serverCSRFSecureFlag = "server.csrf.secure"
 const serverCSRFKeyFlag = "server.csrf.key"
+const pgHostFlag = "postgres.host"
+const pgPortFlag = "postgres.port"
+const pgUsernameFlag = "postgres.username"
+const pgPasswordFlag = "postgres.password"
+const pgDatabaseFlag = "postgres.database"
+const pgApplicationFlag = "postgres.application"
+const pgConnectTimeoutFlag = "postgres.connectTimeout"
+const pgSSLModeFlag = "postgres.sslMode"
+const uiAppLoginURLFlag = "ui_app.urls.login"
+const uiAppRegisterURLFlag = "ui_app.urls.register"
 
 func init() {
 	rootCmd.AddCommand(serverCmd)
@@ -143,47 +157,47 @@ func init() {
 	)
 
 	// Postgres
-	serverCmd.PersistentFlags().String("postgres.host", "", "")
+	serverCmd.PersistentFlags().String(pgHostFlag, "", "")
 	err = viper.BindPFlag(
-		"postgres.host", serverCmd.PersistentFlags().Lookup("postgres.host"),
+		pgHostFlag, serverCmd.PersistentFlags().Lookup(pgHostFlag),
 	)
-	serverCmd.PersistentFlags().String("postgres.port", "", "")
+	serverCmd.PersistentFlags().String(pgPortFlag, "", "")
 	err = viper.BindPFlag(
-		"postgres.port", serverCmd.PersistentFlags().Lookup("postgres.port"),
+		pgPortFlag, serverCmd.PersistentFlags().Lookup(pgPortFlag),
 	)
-	serverCmd.PersistentFlags().String("postgres.username", "", "")
+	serverCmd.PersistentFlags().String(pgUsernameFlag, "", "")
 	err = viper.BindPFlag(
-		"postgres.username", serverCmd.PersistentFlags().Lookup("postgres.username"),
+		pgUsernameFlag, serverCmd.PersistentFlags().Lookup(pgUsernameFlag),
 	)
-	serverCmd.PersistentFlags().String("postgres.password", "", "")
+	serverCmd.PersistentFlags().String(pgPasswordFlag, "", "")
 	err = viper.BindPFlag(
-		"postgres.password", serverCmd.PersistentFlags().Lookup("postgres.password"),
+		pgPasswordFlag, serverCmd.PersistentFlags().Lookup(pgPasswordFlag),
 	)
-	serverCmd.PersistentFlags().String("postgres.database", "", "")
+	serverCmd.PersistentFlags().String(pgDatabaseFlag, "", "")
 	err = viper.BindPFlag(
-		"postgres.database", serverCmd.PersistentFlags().Lookup("postgres.database"),
+		pgDatabaseFlag, serverCmd.PersistentFlags().Lookup(pgDatabaseFlag),
 	)
-	serverCmd.PersistentFlags().String("postgres.application", "", "")
+	serverCmd.PersistentFlags().String(pgApplicationFlag, "", "")
 	err = viper.BindPFlag(
-		"postgres.application", serverCmd.PersistentFlags().Lookup("postgres.application"),
+		pgApplicationFlag, serverCmd.PersistentFlags().Lookup(pgApplicationFlag),
 	)
-	serverCmd.PersistentFlags().String("postgres.connectTimeoutSeconds", "", "")
+	serverCmd.PersistentFlags().String(pgConnectTimeoutFlag, "", "")
 	err = viper.BindPFlag(
-		"postgres.connectTimeoutSeconds", serverCmd.PersistentFlags().Lookup("postgres.connectTimeoutSeconds"),
+		pgConnectTimeoutFlag, serverCmd.PersistentFlags().Lookup(pgConnectTimeoutFlag),
 	)
-	serverCmd.PersistentFlags().String("postgres.sslMode", "", "")
+	serverCmd.PersistentFlags().String(pgSSLModeFlag, "", "")
 	err = viper.BindPFlag(
-		"postgres.sslMode", serverCmd.PersistentFlags().Lookup("postgres.sslMode"),
+		pgSSLModeFlag, serverCmd.PersistentFlags().Lookup(pgSSLModeFlag),
 	)
 
 	// Login & Register UI
-	serverCmd.PersistentFlags().String("ui_app.urls.login", "", "")
+	serverCmd.PersistentFlags().String(uiAppLoginURLFlag, "", "")
 	err = viper.BindPFlag(
-		"ui_app.urls.login", serverCmd.PersistentFlags().Lookup("ui_app.urls.login"),
+		uiAppLoginURLFlag, serverCmd.PersistentFlags().Lookup(uiAppLoginURLFlag),
 	)
-	serverCmd.PersistentFlags().String("ui_app.urls.register", "", "")
+	serverCmd.PersistentFlags().String(uiAppRegisterURLFlag, "", "")
 	err = viper.BindPFlag(
-		"ui_app.urls.login", serverCmd.PersistentFlags().Lookup("ui_app.urls.register"),
+		uiAppRegisterURLFlag, serverCmd.PersistentFlags().Lookup(uiAppRegisterURLFlag),
 	)
 
 	if err != nil {

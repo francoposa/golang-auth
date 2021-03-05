@@ -16,7 +16,7 @@ postgres:
   username: postgres
   database: authentication
   application: authentication
-  connectTimeoutSeconds: 5
+  connectTimeout: 5
   sslMode: disable
 ui_app:
   urls:
