@@ -7,6 +7,9 @@ server:
     read: 15
     write: 10
     idle: 5
+  csrf:
+    secure: false
+    key: place-your-32-byte-long-key-here
 postgres:
   host: localhost
   port: 5432

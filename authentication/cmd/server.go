@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	pgTools "github.com/francoposa/go-tools/postgres"
 	sqlxTools "github.com/francoposa/go-tools/postgres/sqlx"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/gorilla/handlers"
+	"github.com/gorilla/csrf"
 	"github.com/rs/cors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -54,9 +53,18 @@ var serverCmd = &cobra.Command{
 		router.Use(middleware.Logger)
 		router.Use(middleware.Recoverer)
 
+		csrfSecure := viper.GetBool(serverCSRFSecureFlag)
+		csrfKey := []byte(viper.GetString(serverCSRFKeyFlag))
+
 		// Routing to API handlers
 		router.Route("/api/v1/login", func(router chi.Router) {
-			router.Post("/", loginHandler.InitializeLogin)
+			//router.Post("/", loginHandler.InitializeLogin)
+			router.With(csrf.Protect(
+				csrfKey, csrf.Secure(csrfSecure), csrf.Path("/"),
+			)).Get("/", loginHandler.InitializeLogin)
+			router.With(csrf.Protect(
+				csrfKey, csrf.Secure(csrfSecure), csrf.Path("/"),
+			)).Put("/", loginHandler.VerifyLogin)
 		})
 
 		router.Route("/api/v1/users", func(router chi.Router) {
@@ -65,17 +73,22 @@ var serverCmd = &cobra.Command{
 			//router.Post("/authenticate", userHandler.Authenticate)
 		})
 
-		handler := cors.Default().Handler(router)
-		handler = handlers.LoggingHandler(os.Stdout, handler)
+		//corsRouter := cors.Default().Handler(router)
+		corsRouter := cors.New(cors.Options{
+			AllowedOrigins:   []string{"*"},
+			AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodPut},
+			AllowCredentials: true,
+		}).Handler(router)
+		//handler = handlers.LoggingHandler(os.Stdout, handler)
 
-		host := viper.GetString("server.host")
-		port := viper.GetString("server.port")
-		readTimeout := viper.GetInt("server.timeout.read")
-		writeTimeout := viper.GetInt("server.timeout.write")
-		idleTimeout := viper.GetInt("server.timeout.idle")
+		host := viper.GetString(serverHostFlag)
+		port := viper.GetString(serverPortFlag)
+		readTimeout := viper.GetInt(serverTimeoutReadFlag)
+		writeTimeout := viper.GetInt(serverTimeoutWriteFlag)
+		idleTimeout := viper.GetInt(serverTimeoutIdleFlag)
 
 		srv := &http.Server{
-			Handler:      router,
+			Handler:      corsRouter,
 			Addr:         host + ":" + port,
 			ReadTimeout:  time.Duration(readTimeout) * time.Second,
 			WriteTimeout: time.Duration(writeTimeout) * time.Second,
@@ -87,29 +100,46 @@ var serverCmd = &cobra.Command{
 	},
 }
 
+const serverHostFlag = "server.host"
+const serverPortFlag = "server.port"
+const serverTimeoutReadFlag = "server.timeout.read"
+const serverTimeoutWriteFlag = "server.timeout.write"
+const serverTimeoutIdleFlag = "server.timeout.idle"
+const serverCSRFSecureFlag = "server.csrf.secure"
+const serverCSRFKeyFlag = "server.csrf.key"
+
 func init() {
 	rootCmd.AddCommand(serverCmd)
 
 	// HTTP Server
-	serverCmd.PersistentFlags().String("server.host", "", "")
+	serverCmd.PersistentFlags().String(serverHostFlag, "", "")
 	err := viper.BindPFlag(
-		"server.host", serverCmd.PersistentFlags().Lookup("server.host"),
+		serverHostFlag, serverCmd.PersistentFlags().Lookup(serverHostFlag),
 	)
-	serverCmd.PersistentFlags().String("server.port", "", "")
+	serverCmd.PersistentFlags().String(serverPortFlag, "", "")
 	err = viper.BindPFlag(
-		"server.port", serverCmd.PersistentFlags().Lookup("server.port"),
+		serverPortFlag, serverCmd.PersistentFlags().Lookup(serverPortFlag),
 	)
-	serverCmd.PersistentFlags().String("server.timeout.read", "", "")
+	serverCmd.PersistentFlags().String(serverTimeoutReadFlag, "", "")
 	err = viper.BindPFlag(
-		"server.timeout.read", serverCmd.PersistentFlags().Lookup("server.timeout.read"),
+		serverTimeoutReadFlag, serverCmd.PersistentFlags().Lookup(serverTimeoutReadFlag),
 	)
-	serverCmd.PersistentFlags().String("server.timeout.write", "", "")
+	serverCmd.PersistentFlags().String(serverTimeoutWriteFlag, "", "")
 	err = viper.BindPFlag(
-		"server.timeout.write", serverCmd.PersistentFlags().Lookup("server.timeout.write"),
+		serverTimeoutWriteFlag, serverCmd.PersistentFlags().Lookup(serverTimeoutWriteFlag),
 	)
-	serverCmd.PersistentFlags().String("server.timeout.idle", "", "")
+	serverCmd.PersistentFlags().String(serverTimeoutIdleFlag, "", "")
 	err = viper.BindPFlag(
-		"server.timeout.idle", serverCmd.PersistentFlags().Lookup("server.timeout.idle"),
+		serverTimeoutIdleFlag, serverCmd.PersistentFlags().Lookup(serverTimeoutIdleFlag),
+	)
+	// HTTP Server CSRF
+	serverCmd.PersistentFlags().String(serverCSRFSecureFlag, "", "")
+	err = viper.BindPFlag(
+		serverCSRFSecureFlag, serverCmd.PersistentFlags().Lookup(serverCSRFSecureFlag),
+	)
+	serverCmd.PersistentFlags().String(serverCSRFKeyFlag, "", "")
+	err = viper.BindPFlag(
+		serverCSRFKeyFlag, serverCmd.PersistentFlags().Lookup(serverCSRFKeyFlag),
 	)
 
 	// Postgres
