@@ -24,10 +24,6 @@ import (
 	"golang-auth/authentication/infrastructure/crypto"
 )
 
-var testDBNameTemplate = `examplecom_auth_test_%d`
-var createDBStatementTemplate = `CREATE DATABASE %s`
-var dropDBStatementTemplate = `DROP DATABASE %s`
-
 func SetUpDB(t *testing.T, dbName string, superUserPGConfig pgTools.Config) (*sql.DB, error) {
 	t.Helper()
 
@@ -94,8 +90,9 @@ func SetUpUserRepo(t *testing.T, sqlxDB *sqlx.DB) (domain.UserRepo, []*domain.Us
 	}
 
 	for _, user := range users {
+		password := domain.Password(fmt.Sprintf("%s_password12345", user.Username))
 		_, err := authNUserRepo.Create(
-			user, fmt.Sprintf("%s_password12345", user.Username),
+			user, &password,
 		)
 		if err != nil {
 			panic(err)

@@ -36,14 +36,14 @@ func TestPGAuthNUserRepo(t *testing.T) {
 	sqlxDB := sqlx.NewDb(sqlDB, "postgres")
 	authNUserRepo, _ := SetUpUserRepo(t, sqlxDB)
 
-	user, err := domain.NewUser(
-		"suki_s2000", "pinkS2000@honda.com",
+	user, password, err := domain.NewUser(
+		"suki_s2000", "pinkS2000@honda.com", "suki_password12345",
 	)
 	assertions.Nil(err)
 
 	t.Run("create authn user", func(t *testing.T) {
 		createdAuthNUser, err := authNUserRepo.Create(
-			user, "suki_password12345",
+			user, password,
 		)
 		assertions.Nil(err)
 		assertions.Equal(user, createdAuthNUser)
@@ -53,7 +53,7 @@ func TestPGAuthNUserRepo(t *testing.T) {
 		userWithExistingID := &domain.User{ID: user.ID}
 		createdUserWithExistingID, err := authNUserRepo.Create(
 			userWithExistingID,
-			"suki_password12345",
+			password,
 		)
 		assertions.Nil(createdUserWithExistingID)
 		assertions.Equal(
@@ -67,7 +67,7 @@ func TestPGAuthNUserRepo(t *testing.T) {
 		userWithExistingUsername := &domain.User{Username: user.Username}
 		createdUserWithExistingUsername, err := authNUserRepo.Create(
 			userWithExistingUsername,
-			"suki_password12345",
+			password,
 		)
 		assertions.Nil(createdUserWithExistingUsername)
 		assertions.Equal(
@@ -80,7 +80,7 @@ func TestPGAuthNUserRepo(t *testing.T) {
 
 		userWithExistingEmail := &domain.User{Email: user.Email}
 		createdUserWithExistingEmail, err := authNUserRepo.Create(
-			userWithExistingEmail, "suki_password12345",
+			userWithExistingEmail, password,
 		)
 		assertions.Nil(createdUserWithExistingEmail)
 		assertions.Equal(

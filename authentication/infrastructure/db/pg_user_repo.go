@@ -30,9 +30,9 @@ VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING id, username, email, enabled, created_at, updated_at
 `
 
-func (r *PGUserRepo) Create(user *domain.User, password string) (*domain.User, error) {
+func (r *PGUserRepo) Create(user *domain.User, password *domain.Password) (*domain.User, error) {
 
-	hashedPassword, err := r.hasher.Hash(password)
+	hashedPassword, err := r.hasher.Hash(string(*password))
 	if err != nil {
 		log.Println(err)
 		return nil, err

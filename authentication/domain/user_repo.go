@@ -7,7 +7,7 @@ import (
 )
 
 type UserRepo interface {
-	Create(user *User, password string) (*User, error)
+	Create(user *User, password *Password) (*User, error)
 	GetByID(id uuid.UUID) (*User, error)
 	GetByUsername(username string) (*User, error)
 	VerifyPassword(username string, password string) (bool, error)

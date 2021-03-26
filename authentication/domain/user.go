@@ -23,19 +23,24 @@ type User struct {
 	UpdatedAt time.Time
 }
 
-func NewUser(username, email string) (*User, error) {
-	id := uuid.NewV4()
+type Password string
 
-	if !validator.StringLength(
-		username,
-		strconv.Itoa(MinUsernameLen),
-		strconv.Itoa(MaxUsernameLen),
-	) {
-		return nil, UsernameInvalidError{}
+func NewUser(username, email, password string) (*User, *Password, error) {
+	id := uuid.NewV4()
+	now := time.Now().UTC()
+
+	err := ValidateUsernameRequirements(username)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	validatedPassword, err := ValidatePasswordRequirements(password)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	if !validator.IsEmail(email) {
-		return nil, EmailInvalidError{Email: email}
+		return nil, nil, EmailInvalidError{Email: email}
 	}
 
 	return &User{
@@ -43,20 +48,32 @@ func NewUser(username, email string) (*User, error) {
 		Username:  username,
 		Email:     email,
 		Enabled:   true,
-		CreatedAt: time.Now().UTC(),
-		UpdatedAt: time.Now().UTC(),
-	}, nil
+		CreatedAt: now,
+		UpdatedAt: now,
+	}, validatedPassword, nil
 }
 
-func ValidatePasswordRequirements(password string) error {
+func ValidateUsernameRequirements(username string) error {
+	if !validator.StringLength(
+		username,
+		strconv.Itoa(MinUsernameLen),
+		strconv.Itoa(MaxUsernameLen),
+	) {
+		return UsernameInvalidError{}
+	}
+	return nil
+}
+
+func ValidatePasswordRequirements(password string) (*Password, error) {
 	if !validator.StringLength(
 		password,
 		strconv.Itoa(MinPasswordLen),
 		strconv.Itoa(MaxPasswordLen),
 	) {
-		return PasswordInvalidError{}
+		return nil, PasswordInvalidError{}
 	}
-	return nil
+	validatedPassword := Password(password)
+	return &validatedPassword, nil
 }
 
 type UsernameInvalidError struct{}
