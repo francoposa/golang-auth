@@ -70,7 +70,7 @@ func ValidatePasswordRequirements(password string) (*Password, error) {
 		strconv.Itoa(MinPasswordLen),
 		strconv.Itoa(MaxPasswordLen),
 	) {
-		return nil, PasswordInvalidError{}
+		return nil, PasswordInvalidLengthError{}
 	}
 	validatedPassword := Password(password)
 	return &validatedPassword, nil
@@ -94,9 +94,9 @@ func (e EmailInvalidError) Error() string {
 	return fmt.Sprintf("%s is not a valid email address", e.Email)
 }
 
-type PasswordInvalidError struct{}
+type PasswordInvalidLengthError struct{}
 
-func (e PasswordInvalidError) Error() string {
+func (e PasswordInvalidLengthError) Error() string {
 	return fmt.Sprintf(
 		"Password must be between %d and %d characters",
 		MinPasswordLen,
