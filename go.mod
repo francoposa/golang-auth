@@ -16,7 +16,7 @@ require (
 	github.com/golang-migrate/migrate v3.5.4+incompatible
 	github.com/google/uuid v1.1.1
 	github.com/gopherjs/gopherjs v0.0.0-20200217142428-fce0ec30dd00 // indirect
-	github.com/gorilla/handlers v1.4.2
+	github.com/gorilla/csrf v1.7.0
 	github.com/gorilla/mux v1.7.4
 	github.com/jmoiron/sqlx v1.2.1-0.20190826204134-d7d95172beb5
 	github.com/kr/text v0.2.0 // indirect
@@ -24,7 +24,6 @@ require (
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pressly/goose v2.6.0+incompatible
 	github.com/rs/cors v1.7.0
 	github.com/satori/go.uuid v1.2.0
