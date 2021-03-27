@@ -67,25 +67,18 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := domain.NewUser(httpUser.Username, httpUser.Email)
+	user, password, err := domain.NewUser(httpUser.Username, httpUser.Email, httpUser.Password)
 	var usernameErr domain.UsernameInvalidError
 	var emailErr domain.EmailInvalidError
-	if errors.As(err, &usernameErr) || errors.As(err, &emailErr) {
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		body := map[string]string{"errorMessage": err.Error()}
-		json.NewEncoder(w).Encode(body)
-		return
-	}
-	var passwordErr domain.PasswordInvalidError
-	err = domain.ValidatePasswordRequirements(httpUser.Password)
-	if errors.As(err, &passwordErr) {
+	var passwordErr domain.PasswordInvalidLengthError
+	if errors.As(err, &usernameErr) || errors.As(err, &emailErr) || errors.As(err, &passwordErr) {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		body := map[string]string{"errorMessage": err.Error()}
 		json.NewEncoder(w).Encode(body)
 		return
 	}
 
-	createdUser, err := h.repo.Create(user, httpUser.Password)
+	createdUser, err := h.repo.Create(user, password)
 	var existsErr domain.UserAlreadyExistsError
 	if errors.As(err, &existsErr) {
 		w.WriteHeader(http.StatusConflict)
