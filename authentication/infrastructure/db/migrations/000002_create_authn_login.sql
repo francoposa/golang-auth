@@ -2,12 +2,13 @@
 CREATE TABLE IF NOT EXISTS authn_login
 (
     id UUID NOT NULL,
-    user_id UUID NOT NULL,
+    redirect_url TEXT NOT NULL,
     status TEXT NOT NULL,
+    attempts INTEGER NOT NULL,
+    csrf_token TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (user_id) REFERENCES authn_user(id)
+    PRIMARY KEY (id)
 );
 
 -- +goose Down

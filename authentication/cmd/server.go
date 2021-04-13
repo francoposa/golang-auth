@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 
 	pgTools "github.com/francoposa/go-tools/postgres"
@@ -43,10 +44,14 @@ var serverCmd = &cobra.Command{
 		userHandler := server.NewUserHandler(userRepo)
 
 		loginRepo := db.NewPGLoginRepo(sqlxDB, userRepo)
+		loginURL, err := url.Parse(viper.GetString(uiAppLoginURLFlag))
+		if err != nil {
+			panic(err)
+		}
 		loginHandler := server.NewLoginHandler(
 			loginRepo,
 			userRepo,
-			viper.GetString(uiAppLoginURLFlag),
+			*loginURL,
 		)
 
 		router := chi.NewRouter()
@@ -69,21 +74,26 @@ var serverCmd = &cobra.Command{
 			router.With(csrf.Protect(
 				csrfKey, csrf.Secure(csrfSecure), csrf.Path("/"),
 			)).Put("/", loginHandler.VerifyLogin)
+			//router.Put("/", loginHandler.VerifyLogin)
 		})
 
 		router.Route("/api/v1/users", func(router chi.Router) {
 			router.Post("/", userHandler.Create)
 			router.Get("/{id}", userHandler.Get)
-			//router.Post("/authenticate", userHandler.Authenticate)
 		})
 
-		//corsRouter := cors.Default().Handler(router)
+		corsAllowedOrigins := viper.GetStringSlice(serverCORSAllowedOriginsFlag)
+		fmt.Println(corsAllowedOrigins)
+		corsAllowedMethods := viper.GetStringSlice(serverCORSAllowedMethodsFlag)
+		fmt.Println(corsAllowedMethods)
+		corsAllowCredentials := viper.GetBool(serverCORSAllowCredentialsFlag)
+		corsDebug := viper.GetBool(serverCORSDebugFlag)
 		corsRouter := cors.New(cors.Options{
-			AllowedOrigins:   []string{"*"},
-			AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodPut},
-			AllowCredentials: true,
+			AllowedOrigins:   corsAllowedOrigins,
+			AllowedMethods:   corsAllowedMethods,
+			AllowCredentials: corsAllowCredentials,
+			Debug:            corsDebug,
 		}).Handler(router)
-		//handler = handlers.LoggingHandler(os.Stdout, handler)
 
 		host := viper.GetString(serverHostFlag)
 		port := viper.GetString(serverPortFlag)
@@ -109,6 +119,10 @@ const serverPortFlag = "server.port"
 const serverTimeoutReadFlag = "server.timeout.read"
 const serverTimeoutWriteFlag = "server.timeout.write"
 const serverTimeoutIdleFlag = "server.timeout.idle"
+const serverCORSAllowedOriginsFlag = "server.cors.allowedOrigins"
+const serverCORSAllowedMethodsFlag = "server.cors.allowedMethods"
+const serverCORSAllowCredentialsFlag = "server.cors.allowCredentials"
+const serverCORSDebugFlag = "server.cors.debug"
 const serverCSRFSecureFlag = "server.csrf.secure"
 const serverCSRFKeyFlag = "server.csrf.key"
 const pgHostFlag = "postgres.host"
@@ -145,6 +159,27 @@ func init() {
 	serverCmd.PersistentFlags().String(serverTimeoutIdleFlag, "", "")
 	err = viper.BindPFlag(
 		serverTimeoutIdleFlag, serverCmd.PersistentFlags().Lookup(serverTimeoutIdleFlag),
+	)
+	// HTTP server CORS
+	serverCmd.PersistentFlags().String(serverCORSAllowedOriginsFlag, "", "")
+	err = viper.BindPFlag(
+		serverCORSAllowedOriginsFlag,
+		serverCmd.PersistentFlags().Lookup(serverCORSAllowedOriginsFlag),
+	)
+	serverCmd.PersistentFlags().String(serverCORSAllowedMethodsFlag, "", "")
+	err = viper.BindPFlag(
+		serverCORSAllowedMethodsFlag,
+		serverCmd.PersistentFlags().Lookup(serverCORSAllowedMethodsFlag),
+	)
+	serverCmd.PersistentFlags().String(serverCORSAllowCredentialsFlag, "", "")
+	err = viper.BindPFlag(
+		serverCORSAllowCredentialsFlag,
+		serverCmd.PersistentFlags().Lookup(serverCORSAllowCredentialsFlag),
+	)
+	serverCmd.PersistentFlags().String(serverCORSDebugFlag, "", "")
+	err = viper.BindPFlag(
+		serverCORSDebugFlag,
+		serverCmd.PersistentFlags().Lookup(serverCORSDebugFlag),
 	)
 	// HTTP Server CSRF
 	serverCmd.PersistentFlags().String(serverCSRFSecureFlag, "", "")

@@ -7,15 +7,25 @@ server:
     read: 15
     write: 10
     idle: 5
+  cors:
+    allowedOrigins:
+      - http://localhost*
+    allowedMethods:
+      - GET
+      - POST
+      - PUT
+    allowCredentials: True
+    debug: True
   csrf:
     secure: false
     key: place-your-32-byte-long-key-here
+
 postgres:
   host: localhost
   port: 5432
   username: postgres
-  database: authentication
-  application: authentication
+  database: golang_auth_authentication
+  application: golang_auth_authentication
   connectTimeout: 5
   sslMode: disable
 ui_app:
