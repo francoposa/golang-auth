@@ -7,3 +7,12 @@ server:
     read: 15
     write: 10
     idle: 5
+  cors:
+    allowedOrigins:
+      - http://localhost*
+    debug: True
+authenticationService:
+  host: localhost
+  port: 2101
+  loginPath: /api/v1/login
+  loginIDHeader: X-Golang-Auth-Login-ID

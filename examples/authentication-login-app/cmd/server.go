@@ -73,16 +73,4 @@ var serverCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(serverCmd)
-
-	serverCmd.PersistentFlags().String("server.host", "", "")
-	err := viper.BindPFlag("server.host", serverCmd.PersistentFlags().Lookup("server.host"))
-	if err != nil {
-		panic(err)
-	}
-
-	serverCmd.PersistentFlags().String("server.port", "", "")
-	err = viper.BindPFlag("server.port", serverCmd.PersistentFlags().Lookup("server.port"))
-	if err != nil {
-		panic(err)
-	}
 }
