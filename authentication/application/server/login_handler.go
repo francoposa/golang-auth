@@ -18,8 +18,12 @@ type LoginHandler struct {
 	loginURL url.URL
 }
 
-func NewLoginHandler(repo domain.LoginRepo, userRepo domain.UserRepo, loginURL url.URL) *LoginHandler {
-	return &LoginHandler{repo: repo, userRepo: userRepo, loginURL: loginURL}
+func NewLoginHandler(
+	repo domain.LoginRepo,
+	userRepo domain.UserRepo,
+	loginURL url.URL,
+) *LoginHandler {
+	return &LoginHandler{repo, userRepo, loginURL}
 }
 
 func (h *LoginHandler) InitializeLogin(w http.ResponseWriter, r *http.Request) {

@@ -28,6 +28,7 @@ postgres:
   application: golang_auth_authentication
   connectTimeout: 5
   sslMode: disable
+
 ui_app:
   urls:
     login: http://localhost:2150/login

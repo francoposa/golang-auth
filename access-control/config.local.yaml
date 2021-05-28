@@ -12,6 +12,6 @@ postgres:
   port: 5432
   username: postgres
   database: access_control_roles_permissions
-  application: authentication_identity_user_mgmt
+  application: access_control_roles_permissions
   connectTimeoutSeconds: 5
   sslMode: disable

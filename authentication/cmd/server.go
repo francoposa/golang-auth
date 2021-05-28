@@ -83,9 +83,7 @@ var serverCmd = &cobra.Command{
 		})
 
 		corsAllowedOrigins := viper.GetStringSlice(serverCORSAllowedOriginsFlag)
-		fmt.Println(corsAllowedOrigins)
 		corsAllowedMethods := viper.GetStringSlice(serverCORSAllowedMethodsFlag)
-		fmt.Println(corsAllowedMethods)
 		corsAllowCredentials := viper.GetBool(serverCORSAllowCredentialsFlag)
 		corsDebug := viper.GetBool(serverCORSDebugFlag)
 		corsRouter := cors.New(cors.Options{
