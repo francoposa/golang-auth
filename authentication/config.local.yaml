@@ -19,6 +19,9 @@ server:
   csrf:
     secure: false
     key: place-your-32-byte-long-key-here
+    cookieName: csrf
+    header: X-CSRF-Token
+
 
 postgres:
   host: localhost

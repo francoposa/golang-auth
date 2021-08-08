@@ -64,16 +64,20 @@ var serverCmd = &cobra.Command{
 
 		csrfSecure := viper.GetBool(serverCSRFSecureFlag)
 		csrfKey := []byte(viper.GetString(serverCSRFKeyFlag))
+		csrfCookieName := viper.GetString(serverCSRFCookieName)
+		csrfHeader := viper.GetString(serverCSRFHeader)
+		CSRF := csrf.Protect(
+			csrfKey,
+			csrf.Secure(csrfSecure),
+			csrf.CookieName(csrfCookieName),
+			csrf.RequestHeader(csrfHeader),
+		)
 
 		// Routing to API handlers
 		router.Route("/api/v1/login", func(router chi.Router) {
 			//router.Post("/", loginHandler.InitializeLogin)
-			router.With(csrf.Protect(
-				csrfKey, csrf.Secure(csrfSecure), csrf.Path("/"),
-			)).Get("/", loginHandler.InitializeLogin)
-			router.With(csrf.Protect(
-				csrfKey, csrf.Secure(csrfSecure), csrf.Path("/"),
-			)).Put("/", loginHandler.VerifyLogin)
+			router.With(CSRF).Get("/", loginHandler.InitializeLogin)
+			router.With(CSRF).Put("/", loginHandler.VerifyLogin)
 			//router.Put("/", loginHandler.VerifyLogin)
 		})
 
@@ -123,6 +127,8 @@ const serverCORSAllowCredentialsFlag = "server.cors.allowCredentials"
 const serverCORSDebugFlag = "server.cors.debug"
 const serverCSRFSecureFlag = "server.csrf.secure"
 const serverCSRFKeyFlag = "server.csrf.key"
+const serverCSRFCookieName = "server.csrf.cookieName"
+const serverCSRFHeader = "server.csrf.header"
 const pgHostFlag = "postgres.host"
 const pgPortFlag = "postgres.port"
 const pgUsernameFlag = "postgres.username"
@@ -187,6 +193,14 @@ func init() {
 	serverCmd.PersistentFlags().String(serverCSRFKeyFlag, "", "")
 	err = viper.BindPFlag(
 		serverCSRFKeyFlag, serverCmd.PersistentFlags().Lookup(serverCSRFKeyFlag),
+	)
+	serverCmd.PersistentFlags().String(serverCSRFCookieName, "", "")
+	err = viper.BindPFlag(
+		serverCSRFCookieName, serverCmd.PersistentFlags().Lookup(serverCSRFCookieName),
+	)
+	serverCmd.PersistentFlags().String(serverCSRFHeader, "", "")
+	err = viper.BindPFlag(
+		serverCSRFHeader, serverCmd.PersistentFlags().Lookup(serverCSRFHeader),
 	)
 
 	// Postgres

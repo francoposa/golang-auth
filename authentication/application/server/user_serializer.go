@@ -10,7 +10,7 @@ type HttpCreateUser struct {
 	Username        string `json:"username"`
 	Email           string `json:"email"`
 	Password        string `json:"password"`
-	ConfirmPassword string `json:"confirmPassword"`
+	ConfirmPassword string `json:"confirm_password"`
 }
 
 func (u *HttpCreateUser) Validate() error {

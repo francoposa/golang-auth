@@ -34,7 +34,6 @@ func (r *PGUserRepo) Create(user *domain.User, password *domain.Password) (*doma
 
 	hashedPassword, err := r.hasher.Hash(string(*password))
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 
@@ -103,7 +102,6 @@ func (r *PGUserRepo) GetByID(id uuid.UUID) (*domain.User, error) {
 				Value: id.String(),
 			}
 		}
-		log.Println(err)
 		return nil, err
 	}
 
@@ -179,7 +177,6 @@ func (r *PGUserRepo) VerifyPassword(username string, password string) (bool, err
 				Value: username,
 			}
 		}
-		log.Println(err)
 		return false, err
 	}
 

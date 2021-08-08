@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/go-chi/chi"
 	"github.com/gorilla/csrf"
+	uuid "github.com/satori/go.uuid"
 
 	"golang-auth/authentication/domain"
 )
@@ -26,6 +28,41 @@ func NewLoginHandler(
 	return &LoginHandler{repo, userRepo, loginURL}
 }
 
+func (h *LoginHandler) GetLogin(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := uuid.FromString(idStr)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	login, err := h.repo.GetByID(id)
+	var notFoundErr domain.LoginNotFoundError
+	if errors.As(err, &notFoundErr) {
+		w.WriteHeader(http.StatusNotFound)
+		body := map[string]string{"errorMessage": err.Error()}
+		json.NewEncoder(w).Encode(body)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(
+		HttpReadLogin{
+			ID:          login.ID,
+			RedirectURL: login.RedirectURL,
+			Status:      login.Status,
+			Attempts:    login.Attempts,
+			CSRFToken:   login.CSRFToken,
+			CreatedAt:   login.CreatedAt,
+			UpdatedAt:   login.UpdatedAt,
+		},
+	)
+
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
 func (h *LoginHandler) InitializeLogin(w http.ResponseWriter, r *http.Request) {
 	token := csrf.Token(r)
 	login := domain.NewLogin(*r.URL, token)
@@ -35,11 +72,19 @@ func (h *LoginHandler) InitializeLogin(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
-	query := url.Values{}
-	query.Add("login-id", login.ID.String())
-	h.loginURL.RawQuery = query.Encode()
+	body := map[string]string{"login_id": login.ID.String()}
+	err = json.NewEncoder(w).Encode(body)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 
-	http.Redirect(w, r, h.loginURL.String(), http.StatusFound)
+	// TODO finish implementing for redirect-based login apps
+	//query := url.Values{}
+	//query.Add("login-id", login.ID.String())
+	//h.loginURL.RawQuery = query.Encode()
+	//
+	//http.Redirect(w, r, h.loginURL.String(), http.StatusFound)
 }
 
 func (h *LoginHandler) VerifyLogin(w http.ResponseWriter, r *http.Request) {

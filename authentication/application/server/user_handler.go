@@ -21,14 +21,14 @@ func NewUserHandler(repo domain.UserRepo) *UserHandler {
 }
 
 func (h *UserHandler) Get(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	uid, err := uuid.FromString(id)
+	idStr := chi.URLParam(r, "id")
+	id, err := uuid.FromString(idStr)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	retrievedUser, err := h.repo.GetByID(uid)
+	retrievedUser, err := h.repo.GetByID(id)
 	var notFoundErr domain.UserNotFoundError
 	if errors.As(err, &notFoundErr) {
 		w.WriteHeader(http.StatusNotFound)
@@ -98,33 +98,4 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-}
-
-func (h *UserHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
-	httpUser := HttpAuthenticateUser{}
-	err := json.NewDecoder(r.Body).Decode(&httpUser)
-	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	verified, err := h.repo.VerifyPassword(httpUser.Username, httpUser.Password)
-	if errors.Is(
-		err,
-		domain.UserNotFoundError{Field: "username", Value: httpUser.Username}) {
-		verified = false
-	} else if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	if !verified {
-		w.WriteHeader(http.StatusUnauthorized)
-		body := map[string]string{"error_message": "Username or Password is incorrect"}
-		json.NewEncoder(w).Encode(body)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
 }

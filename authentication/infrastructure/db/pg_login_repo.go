@@ -1,6 +1,8 @@
 package db
 
 import (
+	"database/sql"
+	"errors"
 	"log"
 	"net/url"
 	"time"
@@ -23,6 +25,43 @@ func NewPGLoginRepo(db *sqlx.DB, userRepo domain.UserRepo) *PGLoginRepo {
 	}
 }
 
+const selectLoginByID = `
+SELECT id, redirect_url, status, attempts, csrf_token, created_at, updated_at
+FROM authn_login
+WHERE id=$1
+`
+
+func (r *PGLoginRepo) GetByID(id uuid.UUID) (*domain.Login, error) {
+	var rawRedirectURL string
+	var status string
+	var attempts int
+	var csrfToken string
+	var createdAt time.Time
+	var updatedAt time.Time
+
+	err := r.db.QueryRow(
+		selectLoginByID,
+		id.String(),
+	).Scan(&id, &rawRedirectURL, &status, &attempts, &csrfToken, &createdAt, &updatedAt)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, domain.LoginNotFoundError{
+			Field: "id",
+			Value: id.String(),
+		}
+	}
+	redirectURL, _ := url.Parse(rawRedirectURL)
+	return &domain.Login{
+		ID:          id,
+		RedirectURL: *redirectURL,
+		Status:      status,
+		Attempts:    attempts,
+		CSRFToken:   csrfToken,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
+	}, nil
+
+}
+
 const insertLogin = `
 INSERT INTO authn_login (
 	id, redirect_url, status, attempts, csrf_token, created_at, updated_at
@@ -37,7 +76,7 @@ func (r *PGLoginRepo) Create(login *domain.Login) (*domain.Login, error) {
 	var attempts int
 	var csrfToken string
 	var createdAt time.Time
-	var UpdatedAt time.Time
+	var updatedAt time.Time
 
 	err := r.db.QueryRow(
 		insertLogin,
@@ -48,7 +87,7 @@ func (r *PGLoginRepo) Create(login *domain.Login) (*domain.Login, error) {
 		login.CSRFToken,
 		login.CreatedAt,
 		login.UpdatedAt,
-	).Scan(&id, &rawRedirectURL, &status, &attempts, &csrfToken, &createdAt, &UpdatedAt)
+	).Scan(&id, &rawRedirectURL, &status, &attempts, &csrfToken, &createdAt, &updatedAt)
 
 	if err != nil {
 		log.Println(err)
@@ -68,7 +107,7 @@ func (r *PGLoginRepo) Create(login *domain.Login) (*domain.Login, error) {
 		Attempts:    attempts,
 		CSRFToken:   csrfToken,
 		CreatedAt:   createdAt.UTC(),
-		UpdatedAt:   UpdatedAt.UTC(),
+		UpdatedAt:   updatedAt.UTC(),
 	}, nil
 
 }
