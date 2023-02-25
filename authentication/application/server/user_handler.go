@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/chi"
 	uuid "github.com/satori/go.uuid"
 
-	"golang-auth/authentication/domain"
+	"github.com/francoposa/golang-auth/authentication/domain"
 )
 
 type UserHandler struct {

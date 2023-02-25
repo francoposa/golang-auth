@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"golang-auth/examples/authentication-login-app/application/server"
+	"github.com/francoposa/golang-auth/examples/authentication-login-app/application/server"
 )
 
 var serverCmd = &cobra.Command{

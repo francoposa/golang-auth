@@ -1,0 +1,6 @@
+Set CSRF Cookie on redirect to Login UI
+Login Repo saving everything
+Set Login ID as header on redirect to login UI
+Get Login ID handler to send info back
+Login UI use Get endpoint to get Login info, and send back CSRF Token
+Figure out how to issue and possible store sessions

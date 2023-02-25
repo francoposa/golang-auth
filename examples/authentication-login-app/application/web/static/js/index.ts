@@ -6,21 +6,20 @@ const LOGIN_FORM_PASSWORD_ID: string = "password";
 const LOGIN_FORM_ALERT_ID: string = "login-form-alert";
 const LOGIN_API_PATH: string = "http://localhost:2101/api/v1/login";
 
-let headers = {
+const headers: Record<string, string> = {
   Accept: "application/json",
 };
 
 axios
   .get(LOGIN_API_PATH, { headers })
   .then((response) => {
-    console.log(response);
-    const loginID = response.data["login_id"];
-    console.log(loginID);
+    headers["X-CSRF-Token"] = response.data.csrf_token;
+    console.log(headers);
   })
   .catch((error: AxiosError) => {
     const errorMessage = getErrorMessageOrDefault(error);
-    const dangerAlertHTML = makeDangerAlert(errorMessage);
-    document.getElementById(LOGIN_FORM_ALERT_ID).innerHTML = dangerAlertHTML;
+    document.getElementById(LOGIN_FORM_ALERT_ID).innerHTML =
+      makeDangerAlert(errorMessage);
   });
 
 document.getElementById(LOGIN_FORM_ID).addEventListener("submit", (e) => {
@@ -36,14 +35,18 @@ const postLogin = () => {
     document.getElementById(LOGIN_FORM_PASSWORD_ID) as HTMLInputElement
   ).value;
   axios
-    .put(LOGIN_API_PATH, { username, password }, { withCredentials: true })
+    .put(
+      LOGIN_API_PATH,
+      { username, password },
+      { headers: headers, withCredentials: true }
+    )
     .then((_: AxiosResponse) => {
       document.getElementById(LOGIN_FORM_ALERT_ID).innerHTML = "";
     })
     .catch((error: AxiosError) => {
       const errorMessage = getErrorMessageOrDefault(error);
-      const dangerAlertHTML = makeDangerAlert(errorMessage);
-      document.getElementById(LOGIN_FORM_ALERT_ID).innerHTML = dangerAlertHTML;
+      document.getElementById(LOGIN_FORM_ALERT_ID).innerHTML =
+        makeDangerAlert(errorMessage);
     });
 };
 

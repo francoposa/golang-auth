@@ -14,7 +14,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 
-	"golang-auth/authentication/infrastructure/db"
+	"github.com/francoposa/golang-auth/authentication/infrastructure/db"
 )
 
 func setupTestUserHandler(t *testing.T, sqlxDB *sqlx.DB) chi.Router {

@@ -8,14 +8,17 @@ server:
     write: 10
     idle: 5
   cors:
-    allowedOrigins:
-      - http://localhost*
+    allowCredentials: true
+    allowedHeaders:
+      - Content-Type
+      - X-CSRF-Token
     allowedMethods:
       - GET
       - POST
       - PUT
-    allowCredentials: True
-    debug: True
+    allowedOrigins:
+      - http://localhost*
+    debug: true
   csrf:
     secure: false
     key: place-your-32-byte-long-key-here

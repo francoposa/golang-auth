@@ -9,7 +9,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 
-	"golang-auth/authentication/domain"
+	"github.com/francoposa/golang-auth/authentication/domain"
 )
 
 func TestPGAuthNUserRepo(t *testing.T) {

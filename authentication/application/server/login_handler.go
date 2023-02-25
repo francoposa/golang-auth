@@ -11,7 +11,7 @@ import (
 	"github.com/gorilla/csrf"
 	uuid "github.com/satori/go.uuid"
 
-	"golang-auth/authentication/domain"
+	"github.com/francoposa/golang-auth/authentication/domain"
 )
 
 type LoginHandler struct {
@@ -72,8 +72,18 @@ func (h *LoginHandler) InitializeLogin(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
-	body := map[string]string{"login_id": login.ID.String()}
-	err = json.NewEncoder(w).Encode(body)
+	err = json.NewEncoder(w).Encode(
+		HttpReadLogin{
+			ID:          login.ID,
+			RedirectURL: login.RedirectURL,
+			Status:      login.Status,
+			Attempts:    login.Attempts,
+			CSRFToken:   login.CSRFToken,
+			CreatedAt:   login.CreatedAt,
+			UpdatedAt:   login.UpdatedAt,
+		},
+	)
+
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)

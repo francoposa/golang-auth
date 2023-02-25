@@ -1,6 +1,6 @@
 package main
 
-import "golang-auth/authentication/cmd"
+import "github.com/francoposa/golang-auth/authentication/cmd"
 
 func main() {
 	cmd.Execute()

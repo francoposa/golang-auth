@@ -10,7 +10,7 @@ import (
 	"github.com/lib/pq"
 	uuid "github.com/satori/go.uuid"
 
-	"golang-auth/authentication/domain"
+	"github.com/francoposa/golang-auth/authentication/domain"
 )
 
 type PGUserRepo struct {

@@ -20,8 +20,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/pressly/goose"
 
-	"golang-auth/authentication/domain"
-	"golang-auth/authentication/infrastructure/crypto"
+	"github.com/francoposa/golang-auth/authentication/domain"
+	"github.com/francoposa/golang-auth/authentication/infrastructure/crypto"
 )
 
 func SetUpDB(t *testing.T, dbName string, superUserPGConfig pgTools.Config) (*sql.DB, error) {

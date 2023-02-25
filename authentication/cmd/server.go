@@ -16,9 +16,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"golang-auth/authentication/application/server"
-	"golang-auth/authentication/infrastructure/crypto"
-	"golang-auth/authentication/infrastructure/db"
+	"github.com/francoposa/golang-auth/authentication/application/server"
+	"github.com/francoposa/golang-auth/authentication/infrastructure/crypto"
+	"github.com/francoposa/golang-auth/authentication/infrastructure/db"
 )
 
 var serverCmd = &cobra.Command{
@@ -71,6 +71,7 @@ var serverCmd = &cobra.Command{
 			csrf.Secure(csrfSecure),
 			csrf.CookieName(csrfCookieName),
 			csrf.RequestHeader(csrfHeader),
+			csrf.TrustedOrigins(viper.GetStringSlice(serverCORSAllowedOriginsFlag)),
 		)
 
 		// Routing to API handlers
@@ -86,14 +87,16 @@ var serverCmd = &cobra.Command{
 			router.Get("/{id}", userHandler.Get)
 		})
 
+		corsAllowedHeaders := viper.GetStringSlice(serverCORSAllowedHeadersFlag)
 		corsAllowedOrigins := viper.GetStringSlice(serverCORSAllowedOriginsFlag)
 		corsAllowedMethods := viper.GetStringSlice(serverCORSAllowedMethodsFlag)
 		corsAllowCredentials := viper.GetBool(serverCORSAllowCredentialsFlag)
 		corsDebug := viper.GetBool(serverCORSDebugFlag)
 		corsRouter := cors.New(cors.Options{
-			AllowedOrigins:   corsAllowedOrigins,
-			AllowedMethods:   corsAllowedMethods,
 			AllowCredentials: corsAllowCredentials,
+			AllowedHeaders:   corsAllowedHeaders,
+			AllowedMethods:   corsAllowedMethods,
+			AllowedOrigins:   corsAllowedOrigins,
 			Debug:            corsDebug,
 		}).Handler(router)
 
@@ -111,7 +114,7 @@ var serverCmd = &cobra.Command{
 			IdleTimeout:  time.Duration(idleTimeout) * time.Second,
 		}
 
-		fmt.Printf("running http server on port %s...\n", port)
+		fmt.Printf("starting http server on port %s...\n", port)
 		log.Fatal(srv.ListenAndServe())
 	},
 }
@@ -121,9 +124,10 @@ const serverPortFlag = "server.port"
 const serverTimeoutReadFlag = "server.timeout.read"
 const serverTimeoutWriteFlag = "server.timeout.write"
 const serverTimeoutIdleFlag = "server.timeout.idle"
+const serverCORSAllowCredentialsFlag = "server.cors.allowCredentials"
+const serverCORSAllowedHeadersFlag = "server.cors.allowedHeaders"
 const serverCORSAllowedOriginsFlag = "server.cors.allowedOrigins"
 const serverCORSAllowedMethodsFlag = "server.cors.allowedMethods"
-const serverCORSAllowCredentialsFlag = "server.cors.allowCredentials"
 const serverCORSDebugFlag = "server.cors.debug"
 const serverCSRFSecureFlag = "server.csrf.secure"
 const serverCSRFKeyFlag = "server.csrf.key"
@@ -165,20 +169,25 @@ func init() {
 		serverTimeoutIdleFlag, serverCmd.PersistentFlags().Lookup(serverTimeoutIdleFlag),
 	)
 	// HTTP server CORS
-	serverCmd.PersistentFlags().String(serverCORSAllowedOriginsFlag, "", "")
+	serverCmd.PersistentFlags().String(serverCORSAllowCredentialsFlag, "", "")
 	err = viper.BindPFlag(
-		serverCORSAllowedOriginsFlag,
-		serverCmd.PersistentFlags().Lookup(serverCORSAllowedOriginsFlag),
+		serverCORSAllowCredentialsFlag,
+		serverCmd.PersistentFlags().Lookup(serverCORSAllowCredentialsFlag),
+	)
+	serverCmd.PersistentFlags().String(serverCORSAllowedHeadersFlag, "", "")
+	err = viper.BindPFlag(
+		serverCORSAllowedHeadersFlag,
+		serverCmd.PersistentFlags().Lookup(serverCORSAllowedHeadersFlag),
 	)
 	serverCmd.PersistentFlags().String(serverCORSAllowedMethodsFlag, "", "")
 	err = viper.BindPFlag(
 		serverCORSAllowedMethodsFlag,
 		serverCmd.PersistentFlags().Lookup(serverCORSAllowedMethodsFlag),
 	)
-	serverCmd.PersistentFlags().String(serverCORSAllowCredentialsFlag, "", "")
+	serverCmd.PersistentFlags().String(serverCORSAllowedOriginsFlag, "", "")
 	err = viper.BindPFlag(
-		serverCORSAllowCredentialsFlag,
-		serverCmd.PersistentFlags().Lookup(serverCORSAllowCredentialsFlag),
+		serverCORSAllowedOriginsFlag,
+		serverCmd.PersistentFlags().Lookup(serverCORSAllowedOriginsFlag),
 	)
 	serverCmd.PersistentFlags().String(serverCORSDebugFlag, "", "")
 	err = viper.BindPFlag(
